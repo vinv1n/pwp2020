@@ -13,6 +13,7 @@ class Config:
     TESTING = False
     DB_SERVER = 'localhost'
     CSRF_ENABLED = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = random._urandom(40)
 
     @property

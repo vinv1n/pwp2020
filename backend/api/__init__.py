@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.config.from_object(Config())
 
 api = Api(app)
+
 db = SQLAlchemy(app)
 
 # HACK we have to pass database to resource throuhg kwargs
