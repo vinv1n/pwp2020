@@ -4,6 +4,8 @@
 ### User management
 * /api/login POST
 * /api/register POST
+* /api/user GET
+* /api/user?name=userName GET PUT
 
 ### Location management
 * /api/location GET POST
