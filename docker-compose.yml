@@ -1,0 +1,43 @@
+version: "3.5"
+
+services:
+    backend:
+        build:
+            dockerfile: backend/docker/Dockerfile
+            context: .
+        environment:
+            - DB_USER=wearhertalk
+            - DB_PASSWORD=weathertalkdatabasepasswordplzchange
+        ports:
+            - 5000:5000
+        links:
+            - postgres
+        networks:
+            - internal
+        command: ["gunicorn", "--workers", "5", "wsgi:app", "--bind", "0.0.0.0:5000"]
+
+    nginx:
+        image: nginx:1.17.6
+        ports:
+            - "80:80"
+        links:
+            - backend
+            - postgres
+        volumes:
+            - ./config/nginx.conf:/etc/nginx/conf.d/nginx.conf
+        networks:
+            - internal
+
+    postgres:
+        image: postgres:11.6-alpine
+        environment:
+            POSTGRES_PASSWORD: weathertalkdatabasepasswordplzchange
+            POSTGRES_USER: wearhertalk
+            POSTGRES_DB: weathertalk
+
+        networks:
+            - internal
+
+networks:
+    internal:
+        driver: bridge

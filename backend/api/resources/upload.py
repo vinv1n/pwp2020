@@ -1,7 +1,7 @@
 from flask_restful import Resource
 
 
-class Users(Resource):
+class Upload(Resource):
 
     def __init__(self, db):
         self.database = db
