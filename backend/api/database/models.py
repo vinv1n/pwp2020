@@ -1,10 +1,17 @@
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from sqlalchemy import Integer, Float, String
 from sqlalchemy.orm import relationship
 
 from .weathers import WeatherTypes
 
+from api import db
 
 
+association_table = db.Table('association', db.metadata,
+    db.Column('groups_id', Integer, db.ForeignKey('groups.id')),
+    db.Column('device_id', Integer, db.ForeignKey('device.id'))
+)
 
 
 class User(db.Model):
@@ -19,6 +26,8 @@ class User(db.Model):
     # relationships
     devices = relationship("Device")
     device_groups = relationship("DeviceGroup")
+
+    alerts = db.relationship("UserAlert")
 
     @staticmethod
     def create_password(password):
@@ -35,38 +44,38 @@ class Observation(db.Model):
     """
 
     __tablename__ = "observations"
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(Integer, primary_key=True)
 
     # observation related fields
-    humidity = db.Column(db.Float, nullable=True)
-    temperature = db.Column(db.Float, nullable=True)
-    pressure = db.Column(db.Float, nullable=True)
-    wind = db.Column(db.Float, nullable=True)
+    humidity = db.Column(Float, nullable=True)
+    temperature = db.Column(Float, nullable=True)
+    pressure = db.Column(Float, nullable=True)
+    wind = db.Column(Float, nullable=True)
     condition = db.Column(db.Enum(WeatherTypes))
 
     # free description of the observation
     description = db.Column(db.String(250), nullable=True)
 
     # connect observations to a user
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user_id = db.Column(Integer, db.ForeignKey("users.id"))
     user = db.relationship(User, back_populates="observations")
 
     rating = db.relationship("Rating")
-    location_id = db.Column(db.Interger, db.ForeignKey("location.id"))
+    location_id = db.Column(Integer, db.ForeignKey("locations.id"))
 
 
 class UserAlert(db.Model):
     """
-    Alerts user when certain weather conditions are met
+    Alerts user when certain weather condi that name exists on mappetions are met
     """
     __tablename__ = "alerts"
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, db.ForeignKey("users.id"))
 
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-
-    humidity = db.Column(db.Float, nullable=True)
-    temperature = db.Column(db.Float, nullable=True)
-    pressure = db.Column(db.Float, nullable=True)
-    wind = db.Column(db.Float, nullable=True)
+    humidity = db.Column(Float, nullable=True)
+    temperature = db.Column(Float, nullable=True)
+    pressure = db.Column(Float, nullable=True)
+    wind = db.Column(Float, nullable=True)
     condition = db.Column(db.Enum(WeatherTypes))
 
 
@@ -77,11 +86,11 @@ class Location(db.Model):
     """
     __tablename__ = "locations"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(Integer, primary_key=True)
 
-    name = db.Column(db.String(150))
-    longitude = db.Column(db.String(75))
-    latitude = db.Column(db.String(75))
+    name = db.Column(String(150))
+    longitude = db.Column(String(75))
+    latitude = db.Column(String(75))
 
     observations = db.relationship("Observation")
 
@@ -94,13 +103,13 @@ class Rating(db.Model):
     """
     __tablename__ = "ratings"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(Integer, primary_key=True)
 
-    observation_id = db.Column(db.Integer, db.ForeignKey("observation.id"))
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    observation_id = db.Column(Integer, db.ForeignKey("observations.id"))
+    user_id = db.Column(Integer, db.ForeignKey("users.id"))
 
-    content = db.Column(db.String)
-    value = db.Column(db.Interger)
+    content = db.Column(String)
+    value = db.Column(Integer)
 
 
 
@@ -110,14 +119,20 @@ class Device(db.Model):
     and sends them to application
 
     """
-    __tablename__ = "devices"
+    __tablename__ = "device"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150))
+    id = db.Column(Integer, primary_key=True)
+    name = db.Column(String(150))
 
-    location_id = db.Column(db.Intreger, db.ForeignKey("location.id"))
-    user_id = db.Column(db.Interger, db.ForeignKey("user.id"))
-    groups = relationship("DeviceGroup", back_populates="devices")
+    location_id = db.Column(Integer, db.ForeignKey("locations.id"))
+    user_id = db.Column(Integer, db.ForeignKey("users.id"))
+
+    # these many to many relations are a bit funny
+    device_groups = relationship(
+        "DeviceGroup",
+        secondary=association_table,
+        back_populates="members"
+    )
 
 
 class DeviceGroup(db.Model):
@@ -126,8 +141,14 @@ class DeviceGroup(db.Model):
     """
     __tablename__ = "groups"
 
-    id = db.Column(db.Interger, primary_key=True)
-    user_id = db.Column(db.Interger, db.ForeignKey("user.id"))
+    id = db.Column(Integer, primary_key=True)
+
+    name = db.Column(String)
+    user_id = db.Column(Integer, db.ForeignKey("users.id"))
 
     # list of devices that are member of this group
-    members = relationship("Device", back_populates="groups")
+    members = relationship(
+        "Device",
+        secondary=association_table,
+        back_populates="device_groups"
+    )
