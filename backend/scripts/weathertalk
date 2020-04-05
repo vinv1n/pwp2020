@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+echo "Trying to connect to database $1"
+until pg_isready -h $1 -p 5432 -U weathertalk &> /dev/null
+do
+    echo "waiting for database to accept connections"
+    sleep 5
+done
+
+gunicorn --workers 5 wsgi:app --bind 0.0.0.0:5000

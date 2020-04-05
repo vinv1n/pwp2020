@@ -6,15 +6,16 @@ services:
             dockerfile: backend/docker/Dockerfile
             context: .
         environment:
-            - DB_USER=wearhertalk
+            - DB_USER=weathertalk
             - DB_PASSWORD=weathertalkdatabasepasswordplzchange
+            - DB_HOST=postgres
         ports:
             - 5000:5000
         links:
             - postgres
         networks:
             - internal
-        command: ["gunicorn", "--workers", "5", "wsgi:app", "--bind", "0.0.0.0:5000"]
+        command: ["postgres"]
 
     nginx:
         image: nginx:1.17.6
@@ -32,7 +33,7 @@ services:
         image: postgres:11.6-alpine
         environment:
             POSTGRES_PASSWORD: weathertalkdatabasepasswordplzchange
-            POSTGRES_USER: wearhertalk
+            POSTGRES_USER: weathertalk
             POSTGRES_DB: weathertalk
 
         networks:

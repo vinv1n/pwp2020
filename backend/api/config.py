@@ -4,14 +4,15 @@ Application configurations
 import os
 import random
 
-USER = os.environ.get("DB_USER", "vinvin")
+USER = os.environ.get("DB_USER", "weathertalk")
 PASSWORD = os.environ.get("DB_PASSWORD", "")
+DB_HOST = os.environ.get("DB_HOST", "postgres")
 
 
 class Config:
     DEBUG = False
     TESTING = False
-    DB_SERVER = 'localhost'
+    DB_SERVER = DB_HOST
     CSRF_ENABLED = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = random._urandom(40)
