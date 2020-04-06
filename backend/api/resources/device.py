@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import request, Response, jsonify, abort
+from flask import request, Response, jsonify, abort, url_for
 from api.database.models import Device
 
 
@@ -25,7 +25,7 @@ class DeviceCollection(Resource):
             db.session.commit()
             # Get the location of the newly created device
             location_string = {
-                "Location": api.url_for(DeviceItem, handle=request.json["template"]["name"])
+                "Location": url_for("api.deviceitem", handle=request.json["template"]["name"])
                 }
             return Response(headers=location_string, status=201, mimetype='application/json')
         except KeyError:
