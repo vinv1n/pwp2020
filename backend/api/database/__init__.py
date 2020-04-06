@@ -1,16 +1,12 @@
-from .models import Location, User, UserAlert, Observation, Device, DeviceGroup, \
-                    Rating
+from .models import User, Observation, Device, DeviceGroup
 
 from .weathers import WeatherTypes
 
 
 __all__ = [
-    "Location",
     "User",
-    "UserAlert",
     "Observation",
     "Device",
     "DeviceGroup",
-    "Rating",
     "WeatherTypes"
 ]

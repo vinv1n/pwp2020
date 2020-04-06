@@ -27,8 +27,6 @@ class User(db.Model):
     devices = relationship("Device")
     device_groups = relationship("DeviceGroup")
 
-    alerts = db.relationship("UserAlert")
-
     @staticmethod
     def create_password(password):
         return generate_password_hash(password, method="sha512")
@@ -43,7 +41,7 @@ class Observation(db.Model):
 
     """
 
-    __tablename__ = "observations"
+    __tablename__ = "observation"
     id = db.Column(Integer, primary_key=True)
 
     # observation related fields
@@ -60,57 +58,9 @@ class Observation(db.Model):
     user_id = db.Column(Integer, db.ForeignKey("users.id"))
     user = db.relationship(User, back_populates="observations")
 
-    rating = db.relationship("Rating")
-    location_id = db.Column(Integer, db.ForeignKey("locations.id"))
-
-
-class UserAlert(db.Model):
-    """
-    Alerts user when certain weather condi that name exists on mappetions are met
-    """
-    __tablename__ = "alerts"
-    id = db.Column(Integer, primary_key=True)
-    user_id = db.Column(Integer, db.ForeignKey("users.id"))
-
-    humidity = db.Column(Float, nullable=True)
-    temperature = db.Column(Float, nullable=True)
-    pressure = db.Column(Float, nullable=True)
-    wind = db.Column(Float, nullable=True)
-    condition = db.Column(db.Enum(WeatherTypes))
-
-
-class Location(db.Model):
-    """
-    Geographic location of the observation.
-
-    """
-    __tablename__ = "locations"
-
-    id = db.Column(Integer, primary_key=True)
-
-    name = db.Column(String(150))
-    longitude = db.Column(String(75))
-    latitude = db.Column(String(75))
-
-    observations = db.relationship("Observation")
-
-
-
-class Rating(db.Model):
-    """
-    User rating of observations.
-
-    """
-    __tablename__ = "ratings"
-
-    id = db.Column(Integer, primary_key=True)
-
-    observation_id = db.Column(Integer, db.ForeignKey("observations.id"))
-    user_id = db.Column(Integer, db.ForeignKey("users.id"))
-
-    content = db.Column(String)
-    value = db.Column(Integer)
-
+    # observation's location information
+    longitude = db.Column(String(150))
+    latitude = db.Column(String(150))
 
 
 class Device(db.Model):
@@ -124,7 +74,6 @@ class Device(db.Model):
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String(150))
 
-    location_id = db.Column(Integer, db.ForeignKey("locations.id"))
     user_id = db.Column(Integer, db.ForeignKey("users.id"))
 
     # these many to many relations are a bit funny
