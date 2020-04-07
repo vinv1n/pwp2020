@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from flask import request, Response, jsonify, abort, url_for
-from api.database.models import Device
+from api.database import Device
 
 
 class DeviceCollection(Resource):
@@ -8,7 +8,7 @@ class DeviceCollection(Resource):
     def get(self, User):
         """ Get all devices """
         # TODO the returned devices should have proper META such as controls with them
-        answer = Device.query.filter_by().all()
+        answer = self.database.session.query(Device).filter().all()
         return jsonify(answer)
 
     def post(self, User):
@@ -21,8 +21,8 @@ class DeviceCollection(Resource):
                 longitude=request.json["template"]["latitude"],
                 user_id = User
             )
-            db.session.add(dev)
-            db.session.commit()
+            self.database.session.add(dev)
+            self.database.session.commit()
             # Get the location of the newly created device
             location_string = {
                 "Location": url_for("api.deviceitem", handle=request.json["template"]["name"])
@@ -36,14 +36,34 @@ class DeviceCollection(Resource):
 
 class DeviceItem(Resource):
 
-    def get(self, device):
-        pass
+    def get(self, device_id):
+        dev = self.database.session.query(Device).filter(
+                    Device.id == device_id
+                ).first()
 
-    def put(self, device):
+        if not dev:
+            return abort(404)
+
+        return Response(dev, status=200)
+
+    def put(self, device_id):
         if not request.json:
             abort(415)
-            
-        pass
+        
+        dev = self.database.session.query(Device).filter(
+                    Device.id == device_id
+                ).first()
 
-    def delete(self, device):
-        pass
+        dev.name = request.json["template"]["name"],
+        dev.latitude = request.json["template"]["latitude"],
+        dev.longitude = request.json["template"]["latitude"],
+        self.database.session.add(dev)
+        self.database.session.commit()
+        return Response(status=204)
+
+
+    def delete(self, device_id):
+        dev = self.database.session.query(Device).filter(
+                    Device.id == device_id
+                ).first()
+        return Response(status=204)
