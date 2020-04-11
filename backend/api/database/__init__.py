@@ -1,4 +1,4 @@
-from .models import User, Observation, Device, DeviceGroup
+from .models import User, Observation, Device, DeviceGroup, WeatherTalkDatabase
 
 from .weathers import WeatherTypes
 
@@ -8,5 +8,6 @@ __all__ = [
     "Observation",
     "Device",
     "DeviceGroup",
-    "WeatherTypes"
+    "WeatherTypes",
+    "WeatherTalkDatabase"
 ]

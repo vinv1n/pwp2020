@@ -35,7 +35,7 @@ class ObservationItem(Resource):
     def create_observation_response(self, base_url, observations):
         collection = self.hypermedia.get_collection_entry(observations)
         if not collection:
-            return self.hypermedia.construct_404()
+            return self.hypermedia.construct_404_error()
 
         return collection
 

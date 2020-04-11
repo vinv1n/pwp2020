@@ -1,27 +1,30 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from sqlalchemy import Integer, Float, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Integer, Float, String, create_engine, \
+    Table, ForeignKey, Column, Enum
+
+from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
 from .weathers import WeatherTypes
 
-from api import db
 
+Base = declarative_base()
 
-association_table = db.Table('association', db.metadata,
-    db.Column('groups_id', Integer, db.ForeignKey('groups.id')),
-    db.Column('device_id', Integer, db.ForeignKey('device.id'))
+association_table = Table('association', Base.metadata,
+    Column('groups_id', Integer, ForeignKey('groups.id')),
+    Column('device_id', Integer, ForeignKey('device.id'))
 )
 
 
-class User(db.Model):
+class User(Base):
 
     __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False, unique=True)
-    password = db.Column(db.String, nullable=False)
-    observations = db.relationship("Observation", back_populates="user")
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+    password = Column(String, nullable=False)
+    observations = relationship("Observation", back_populates="user")
 
     # relationships
     devices = relationship("Device")
@@ -35,35 +38,35 @@ class User(db.Model):
         return check_password_hash(self.password, password)
 
 
-class Observation(db.Model):
+class Observation(Base):
     """
     Observations made by users
 
     """
 
     __tablename__ = "observation"
-    id = db.Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     # observation related fields
-    humidity = db.Column(Float, nullable=True)
-    temperature = db.Column(Float, nullable=True)
-    pressure = db.Column(Float, nullable=True)
-    wind = db.Column(Float, nullable=True)
-    condition = db.Column(db.Enum(WeatherTypes))
+    humidity = Column(Float, nullable=True)
+    temperature = Column(Float, nullable=True)
+    pressure = Column(Float, nullable=True)
+    wind = Column(Float, nullable=True)
+    condition = Column(Enum(WeatherTypes))
 
     # free description of the observation
-    description = db.Column(db.String(250), nullable=True)
+    description = Column(String(250), nullable=True)
 
     # connect observations to a user
-    user_id = db.Column(Integer, db.ForeignKey("users.id"))
-    user = db.relationship(User, back_populates="observations")
+    user_id = Column(Integer, ForeignKey("users.id"))
+    user = relationship(User, back_populates="observations")
 
     # observation's location information
-    longitude = db.Column(String(150))
-    latitude = db.Column(String(150))
+    longitude = Column(String(150))
+    latitude = Column(String(150))
 
 
-class Device(db.Model):
+class Device(Base):
     """
     Devices registered by user which measure weather information
     and sends them to application
@@ -71,10 +74,10 @@ class Device(db.Model):
     """
     __tablename__ = "device"
 
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String(150))
+    id = Column(Integer, primary_key=True)
+    name = Column(String(150))
 
-    user_id = db.Column(Integer, db.ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     # these many to many relations are a bit funny
     device_groups = relationship(
@@ -84,16 +87,16 @@ class Device(db.Model):
     )
 
 
-class DeviceGroup(db.Model):
+class DeviceGroup(Base):
     """
     Groups of devices created by user
     """
     __tablename__ = "groups"
 
-    id = db.Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    name = db.Column(String)
-    user_id = db.Column(Integer, db.ForeignKey("users.id"))
+    name = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))
 
     # list of devices that are member of this group
     members = relationship(
@@ -101,3 +104,12 @@ class DeviceGroup(db.Model):
         secondary=association_table,
         back_populates="device_groups"
     )
+
+
+class WeatherTalkDatabase:
+
+    def __init__(self, config):
+
+        self.engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
+        self.session = sessionmaker(self.engine)
+        Base.metadata.create_all(self.engine)
