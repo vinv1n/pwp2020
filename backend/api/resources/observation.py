@@ -3,11 +3,15 @@ from flask import request, Response, jsonify, abort, url_for
 
 from api.database import User, Observation
 
+from .utils import ObservationHypermediaBuilder
+from .resource_maps import observation
+
 
 class ObservationCollection(Resource):
 
     def __init__(self, db):
         self.database = db
+        self.hypermedia = ObservationHypermediaBuilder(observation)
 
     def post(self, user):
         pass
@@ -29,49 +33,11 @@ class ObservationItem(Resource):
         return Response()
 
     def create_observation_response(self, base_url, observations):
-        entries = []
-        for observation in observations:
-            entry = {
-                "href": f"{base_url}/{observation.id}",
-                "data": [
-                    {
-                        "name": "temperatute",
-                        "value": str(observation.temperatute),
-                        "prompt": "Temperature (degrees of Celsius)"
-                    },
-                    {
-                        "name": "wind",
-                        "value": str(observation.wind),
-                        "prompt": "Speed of wind (m/s)"
-                    },
-                    {
-                        "name": "wind-direction",
-                        "value": str(observation.wind_direction),
-                        "prompt": "Direction of wind"
-                    }
-                    
-                ]
-            }
-            entries.append(entry)
+        collection = self.hypermedia.get_collection_entry(observations)
+        if not collection:
+            return self.hypermedia.construct_404()
 
-        resp = {
-            "collection": {
-                "href": base_url
-            }
-        }
-        if not entries:
-            resp = {
-                "collection": {
-                    "href": base_url,
-                    "error": {
-                        "title": "Not Found",
-                        "message": "The requested observation could not be found."
-                    }
-                }
-            }
-            return resp
-
-
+        return collection
 
     def put(self, observation_id):
         pass
