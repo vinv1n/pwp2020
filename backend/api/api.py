@@ -1,6 +1,7 @@
 from . import db, api
 
 from .resources import (
+    EntryPoint,
     DeviceCollection,
     DeviceItem,
     GroupCollection,
@@ -14,7 +15,7 @@ from .resources import (
     UsersGroupCollection,
 )
 
-
+api.add_resource(EntryPoint, "/api/")
 api.add_resource(DeviceCollection, "/api/devices/")
 api.add_resource(DeviceItem, "/api/devices/<device>/")
 api.add_resource(GroupCollection, "/api/groups/")
