@@ -133,3 +133,34 @@ class ObservationHypermediaBuilder(HypermediaBuilder):
             "items": items
         }
         return collection
+
+
+class DeviceHypermediaBuilder(HypermediaBuilder):
+
+    base_url = "/api/devices"
+
+    def __init__(self, attributes):
+        super.__init__(attributes)
+
+    def get_collection_inner_entry(self, device):
+        data = self.create_data_entry(device)
+        entry = {
+            "href": f"{self.base_url}/{device.id}",
+            "data": data
+        }
+        return entry
+
+    def get_collection_entry(self, devices: Union[QuerySet, List[Device]]) -> Dict[str, Any]:
+        """
+        Creates hypermedia collection based on provided model
+        """
+        items = []
+        for device in devices:
+            entry = self.get_collection_inner_entry(device)
+            items.append(entry)
+        
+        collection = {
+            "href": self.base_url,
+            "items": items
+        }
+        return collection

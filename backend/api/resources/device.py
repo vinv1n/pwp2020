@@ -2,16 +2,21 @@ from flask_restful import Resource
 from flask import request, Response, jsonify, abort, url_for
 from api.database import Device
 
+from .utils import DeviceHypermediaBuilder
 
 class DeviceCollection(Resource):
 
+    def __init__(self, db):
+        self.database = db
+        self.hypermedia = DeviceHypermediaBuilder
+
     def get(self, User):
         """ Get all devices """
-        # TODO the returned devices should have proper META such as controls with them
         answer = self.database.session.query(Device).filter().all()
         return jsonify(answer)
 
     def post(self, User):
+        """ Create a new device """ 
         if not request.json:
             abort(415)
         try:
@@ -36,7 +41,11 @@ class DeviceCollection(Resource):
 
 class DeviceItem(Resource):
 
+    def __init__(self, db):
+        self.database = db
+
     def get(self, device_id):
+        """ Get details of a single device """
         dev = self.database.session.query(Device).filter(
                     Device.id == device_id
                 ).first()
@@ -47,6 +56,7 @@ class DeviceItem(Resource):
         return Response(dev, status=200)
 
     def put(self, device_id):
+        """ Update device details """
         if not request.json:
             abort(415)
         
@@ -63,6 +73,7 @@ class DeviceItem(Resource):
 
 
     def delete(self, device_id):
+        """ Delete a device and all its details """
         dev = self.database.session.query(Device).filter(
                     Device.id == device_id
                 ).first()
