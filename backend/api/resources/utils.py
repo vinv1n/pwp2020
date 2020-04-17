@@ -1,4 +1,5 @@
 import typing
+import json
 
 from enum import Enum
 
@@ -56,7 +57,7 @@ class HypermediaBuilder:
             entry.append({"name": attribute, "value": value})
 
         return entry
-    
+
     def _get_template_entries(self) -> List[Dict]:
         """
         Constructs template entries for collection+json
@@ -127,7 +128,7 @@ class ObservationHypermediaBuilder(HypermediaBuilder):
         for observation in observations:
             entry = self.get_collection_inner_entry(observation)
             items.append(entry)
-        
+
         collection = {
             "href": self.base_url,
             "items": items
@@ -158,7 +159,7 @@ class DeviceHypermediaBuilder(HypermediaBuilder):
         for device in devices:
             entry = self.get_collection_inner_entry(device)
             items.append(entry)
-        
+
         collection = {
             "href": self.base_url,
             "items": items

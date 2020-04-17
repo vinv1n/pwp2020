@@ -113,3 +113,24 @@ class WeatherTalkDatabase:
         self.engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
         self.session = sessionmaker(self.engine)
         Base.metadata.create_all(self.engine)
+
+    def get_observation_by_id(self, observation_id):
+        observation = self.session.query(Observation).filter(
+            Observation.id == observation_id
+        ).first()
+
+        if not observation:
+            return None
+
+        return observation
+
+    def delete_observation(self, observation_id: int) -> int:
+        obs = self.session.query(Observation).filter(
+            Observation.id == observation_id
+        ).first()
+        if not obs:
+            return None
+
+        self.session.delete(obs)
+        self.session.commit()
+        return obs.id
