@@ -34,12 +34,13 @@ class ObservationItem(Resource):
         # we need just the first one
         observation = self.database.session.query(Observation).filter(
             Observation.id == observation_id
-        ).first()
+        )
 
         if not observation:
             self.hypermedia.construct_404_error()
 
-        return Response()
+        collection = self.hypermedia.get_collection_entry(observation)
+        return jsonify(collection), 200
 
     def create_observation_response(self, base_url, observations):
         collection = self.hypermedia.get_collection_entry(observations)
@@ -69,6 +70,8 @@ class ObservationItem(Resource):
         except Exception as e:
             logger.warning("Error during database update. Error %s (%s)", e, e.__class__)
             abort(500)
+
+        return 201, {}
 
 
     def delete(self, observation_id):

@@ -6,6 +6,8 @@ from enum import Enum
 from typing import Dict, List, Union, Any
 from sqlalchemy import QuerySet
 
+from .resource_maps import observation_search_links
+
 from ..database import Observation
 
 
@@ -57,6 +59,23 @@ class HypermediaBuilder:
             entry.append({"name": attribute, "value": value})
 
         return entry
+
+
+    def get_item_links(self, item: sqlalchemy.Model, search_criteria: Dict[str, str]) -> List(Dict):
+        links = []
+        for search, content in search_criteria.items():
+            value = getattr(item, search, default="")
+            if not value:
+                continue
+
+            key = content.get("key", search)
+            res = {
+                "rel": content.get("rel", ""),
+                "href": f"{self.base_url}?{key}={value}"
+            }
+            links.append(res)
+
+        return links
 
     def _get_template_entries(self) -> List[Dict]:
         """
@@ -116,6 +135,7 @@ class ObservationHypermediaBuilder(HypermediaBuilder):
         data = self.create_data_entry(observation)
         entry = {
             "href": f"{self.base_url}/{observation.id}",
+            "links": self.get_item_links(observation, observation_search_links),
             "data": data
         }
         return entry

@@ -25,3 +25,14 @@ observation = {
         "prompt": "Humidity as a percentage"
     }
 }
+
+observation_search_links = {
+    "location": {
+        "rel": "observations-by-location",
+        "key": "coordinates"
+    },
+    "device": {
+        "rel": "observations-by-device",
+        "key": "device"
+    }
+}

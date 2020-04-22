@@ -62,8 +62,7 @@ class Observation(Base):
     user = relationship(User, back_populates="observations")
 
     # observation's location information
-    longitude = Column(String(150))
-    latitude = Column(String(150))
+    location = String(300)
 
 
 class Device(Base):
