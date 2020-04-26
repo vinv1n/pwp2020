@@ -30,7 +30,7 @@ services:
             - internal
 
     postgres:
-        image: postgres:11.6-alpine
+        image: postgres:12.2-alpine
         environment:
             POSTGRES_PASSWORD: weathertalkdatabasepasswordplzchange
             POSTGRES_USER: weathertalk
