@@ -17,11 +17,44 @@ class ObservationCollection(Resource):
         self.database = db
         self.hypermedia = ObservationHypermediaBuilder(observation)
 
-    def post(self, user):
-        pass
+    def post(self):
+        base_observation = Observation()
+        for item, value in request.args.items():
+            try:
+                if isinstance(item, list):
+                    item = ",".join(item)
+
+                setattr(base_observation, item, value)
+            except Exception as e:
+                logger.critical("Error during request parsing, error %s (%s)", e, e.__class__)
+                return Response(self.hypermedia.construct_400_error(), status=400)
+
+        # force must be used as the content type is not plain json
+        body = request.get_json(force=True)
+
+        template = body.get("template", {})
+        if not template:
+            return Response(self.hypermedia.construct_400_error(), status=400)
+
+        data = template.get("data", [])
+        if not data:
+            return Response(self.hypermedia.construct_400_error(), status=400)
+
+        for entry in data:
+            name = entry.get("name", "")
+            value = entry("value")
+            if not all((name, value)):
+                return Response(self.hypermedia.construct_400_error(), status=400)
+
+            setattr(base_observation, name, value)
+
+        self.database.session.add(base_observation)
+        self.database.session.commit()
+        return Response(f"Location:/api/observations/{base_observation.id}", status=201)
 
     def get(self):
         pass
+
 
 class ObservationItem(Resource):
 
@@ -37,15 +70,15 @@ class ObservationItem(Resource):
         )
 
         if not observation:
-            self.hypermedia.construct_404_error()
+            return Response(self.hypermedia.construct_404_error(), status=404)
 
         collection = self.hypermedia.get_collection_entry(observation)
-        return jsonify(collection), 200
+        return Response(jsonify(collection), status=200)
 
     def create_observation_response(self, base_url, observations):
         collection = self.hypermedia.get_collection_entry(observations)
         if not collection:
-            return self.hypermedia.construct_404_error()
+            return Response(self.hypermedia.construct_404_error(), status=400)
 
         return collection
 
@@ -53,11 +86,11 @@ class ObservationItem(Resource):
 
         observation = self.database.get_observation_by_id(observation_id)
         if not observation:
-            return self.hypermedia.construct_404_error()
+            return Response(self.hypermedia.construct_404_error(), status=404)
 
         try:
             params = request.json["template"]["data"]
-            # TODO chech the actual parameters
+            # TODO check the actual parameters
             for item in params:
                 setattr(observation, item["name"], item["value"])
 
@@ -65,18 +98,18 @@ class ObservationItem(Resource):
             self.database.session.commit()
 
         except KeyError:
-            return self.hypermedia.construct_400_error()
+            return Response(self.hypermedia.construct_400_error(), status=400)
 
         except Exception as e:
             logger.warning("Error during database update. Error %s (%s)", e, e.__class__)
             abort(500)
 
-        return 201, {}
+        return Response(status=201)
 
 
     def delete(self, observation_id):
         res = self.database.delete_observation(observation_id)
         if not res:
-            self.hypermedia.construct_404_error()
+            return Response(self.hypermedia.construct_404_error(), status=404)
 
-        return res
+        return Response(status=204)
