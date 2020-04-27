@@ -111,7 +111,7 @@ class WeatherTalkDatabase:
 
         self.engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
         self.session = sessionmaker(self.engine)
-        Base.metadata.create_all(self.engine)
+        Base.metadata.create_all(self.engine, checkfirst=True)
 
     def get_observation_by_id(self, observation_id):
         observation = self.session.query(Observation).filter(
