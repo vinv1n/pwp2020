@@ -38,17 +38,41 @@ function observationRow(item) {
         + "</tr>";
 }
 
-function renderObservationForm(collection, method) {
+function renderObservation(body) {
+    let nav = $("div.navigation");
+    nav.empty();
+    let item = body.collection.items[0];
+    item.links.forEach(function (it) {
+        nav.append("<a href='" + it.href + "'>" + it.rel + "</a>");
+    });
+    renderObservationForm(item.data, item.href, "PUT");
+}
+
+function renderObservationForm(data, href, method) {
     let form = $("<form>");
-    form.attr("action", collection.href);
+    form.attr("action", href);
     form.attr("method", method);
     form.submit(submitObservation);
-    namedescs = {}
+    new_data = {}
     data.forEach(function (item) {
-        namedescs[item["name"]] = item["prompt"];
+        new_data[item.name] = item;
     });
-    form.append("<label>" + namedescs.temperature + "</label>");
-    form.append("<input type='text' name='temperature'>");
+    order = [
+        "location",
+        "observed-at",
+        "temperature",
+        "wind",
+        "wind-direction",
+        "humidity",
+    ];
+    order.forEach(function (item) {
+        form.append("<label>" + new_data[item].prompt + "</label>");
+        form.append(
+            "<input type='text' "
+            + "name='" + new_data[item].name + "' "
+            + "value='" + new_data[item].value + "'>"
+        );
+    });
     form.append("<input type='submit' name='submit' value='Submit'>");
     $("div.form").html(form);
 }
