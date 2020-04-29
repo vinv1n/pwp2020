@@ -147,12 +147,17 @@ class ObservationHypermediaBuilder(HypermediaBuilder):
         for observation in observations:
             entry = self.get_collection_inner_entry(observation)
             items.append(entry)
+        template = self.construct_template()
 
         collection = {
             "href": self.base_url,
-            "items": items
+            "items": items,
+            "template": template,
         }
-        return collection
+        result = {
+            "collection": collection,
+        }
+        return result
 
 
 class DeviceHypermediaBuilder(HypermediaBuilder):
@@ -178,9 +183,14 @@ class DeviceHypermediaBuilder(HypermediaBuilder):
         for device in devices:
             entry = self.get_collection_inner_entry(device)
             items.append(entry)
+        template = self.construct_template()
 
         collection = {
             "href": self.base_url,
-            "items": items
+            "items": items,
+            "template": template,
         }
-        return collection
+        result = {
+            "collection": collection,
+        }
+        return result
