@@ -1,7 +1,7 @@
 import logging
 
 from flask_restful import Resource
-from flask import request, Response, jsonify, abort, url_for
+from flask import json, request, Response, jsonify, abort, url_for
 
 from api.database import User, Observation
 
@@ -53,7 +53,9 @@ class ObservationCollection(Resource):
         return Response(f"Location:/api/observations/{base_observation.id}", status=201)
 
     def get(self):
-        pass
+        observations = self.database.session.query(Observation).all()
+        collection = self.hypermedia.get_collection_entry(observations)
+        return Response(json.dumps(collection), status=200, mimetype="application/vnd.collection+json")
 
 
 class ObservationItem(Resource):
