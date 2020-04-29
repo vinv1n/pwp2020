@@ -23,7 +23,10 @@ observation = {
     },
     "humidity": {
         "prompt": "Humidity as a percentage"
-    }
+    },
+    "location": {
+        "prompt": "Location of the observation"
+    },
 }
 
 observation_search_links = {
