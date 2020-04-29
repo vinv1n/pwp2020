@@ -4,7 +4,6 @@ import json
 from enum import Enum
 
 from typing import Dict, List, Union, Any
-from sqlalchemy import QuerySet
 
 from .resource_maps import observation_search_links
 
@@ -61,7 +60,7 @@ class HypermediaBuilder:
         return entry
 
 
-    def get_item_links(self, item: sqlalchemy.Model, search_criteria: Dict[str, str]) -> List(Dict):
+    def get_item_links(self, item, search_criteria):
         links = []
         for search, content in search_criteria.items():
             value = getattr(item, search, default="")
@@ -129,7 +128,7 @@ class ObservationHypermediaBuilder(HypermediaBuilder):
     base_url = "/api/observations"
 
     def __init__(self, attributes):
-        super.__init__(attributes)
+        super().__init__(attributes)
 
     def get_collection_inner_entry(self, observation):
         data = self.create_data_entry(observation)
@@ -140,7 +139,7 @@ class ObservationHypermediaBuilder(HypermediaBuilder):
         }
         return entry
 
-    def get_collection_entry(self, observations: Union[QuerySet, List[Observation]]) -> Dict[str, Any]:
+    def get_collection_entry(self, observations):
         """
         Creates hypermedia collection based on provided model
         """
@@ -171,7 +170,7 @@ class DeviceHypermediaBuilder(HypermediaBuilder):
         }
         return entry
 
-    def get_collection_entry(self, devices: Union[QuerySet, List[Device]]) -> Dict[str, Any]:
+    def get_collection_entry(self, devices):
         """
         Creates hypermedia collection based on provided model
         """
