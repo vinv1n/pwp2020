@@ -1,4 +1,5 @@
 from api import app
+from api.api import api as api_
 
 
 if __name__ == "__main__":
