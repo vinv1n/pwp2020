@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import Integer, Float, String, create_engine, \
     Table, ForeignKey, Column, Enum
 
-from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
 from .weathers import WeatherTypes
@@ -110,7 +110,7 @@ class WeatherTalkDatabase:
     def __init__(self, config):
 
         self.engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
-        self.session = sessionmaker(self.engine)
+        self.session = scoped_session(sessionmaker(self.engine))
         Base.metadata.create_all(self.engine, checkfirst=True)
 
     def get_observation_by_id(self, observation_id):

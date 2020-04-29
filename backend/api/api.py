@@ -1,4 +1,4 @@
-from . import db, api
+from . import db, api, app
 
 from .resources import (
     EntryPoint,
@@ -25,3 +25,7 @@ api.add_resource(ObservationItem, "/api/observations/<observation>/", resource_c
 api.add_resource(UserCollection, "/api/users/", resource_class_kwargs={'db': db})
 api.add_resource(UserItem, "/api/users/<user>/", resource_class_kwargs={'db': db})
 api.add_resource(UsersGroupCollection, "/api/users/<user>/groups/", resource_class_kwargs={'db': db})
+
+@app.teardown_request
+def teardown(exception):
+    db.session.remove()
