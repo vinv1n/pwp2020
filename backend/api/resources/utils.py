@@ -2,9 +2,11 @@ import typing
 import json
 
 from enum import Enum
+from flask import Response, request
 
 from typing import Dict, List, Union, Any
 
+from .. import COLLECTIONJSON
 from .resource_maps import observation_search_links
 
 from ..database import Observation
@@ -194,3 +196,80 @@ class DeviceHypermediaBuilder(HypermediaBuilder):
             "collection": collection,
         }
         return result
+
+
+class CollectionJsonBuilder(dict):
+
+    def __init__(self):
+        self["collection"] = {}
+
+    def add_error(self, title, message=None):
+        self["collection"]["error"] = {
+            "title": title,
+        }
+        if message:
+            self["collection"]["error"]["message"] = message
+
+    def add_href(self, href):
+        self["collection"]["href"] = href
+
+    def add_item(self, item):
+        self.add_items()
+        self["collection"]["items"].append(item)
+
+    def add_items(self):
+        if "items" not in self["collection"]:
+            self["collection"]["items"] = []
+
+    def add_link(self, rel, href):
+        if "links" not in self["collection"]:
+            self["collection"]["links"] = []
+        self["collection"]["links"].append(
+            {
+                "rel": rel,
+                "href": href,
+            }
+        )
+
+    def add_template(self, template):
+        self["collection"]["template"] = {}
+        self["collection"]["template"]["data"] = template
+
+
+class CollectionJsonItemBuilder(dict):
+
+    def add_href(self, href):
+        self["href"] = href
+
+    def add_link(self, rel, href):
+        if "links" not in self:
+            self["links"] = []
+        self["links"].append(
+            {
+                "rel": rel,
+                "href": href,
+            }
+        )
+
+    def add_data_entry(self, name, value, prompt=None):
+        if "data" not in self:
+            self["data"] = []
+        if not prompt:
+            prompt = name
+        item = {
+            "name": name,
+            "value": value,
+            "prompt": prompt,
+        }
+        self["data"].append(item)
+
+
+def create_error_response(code, title, message=None):
+    body = CollectionJsonBuilder()
+    body.add_href(request.path)
+    body.add_error(title, message)
+    return Response(json.dumps(body), code, mimetype=COLLECTIONJSON)
+
+def create_500_error():
+    message = "An error happened"
+    return create_error_response(500, "Internal server error", message)
