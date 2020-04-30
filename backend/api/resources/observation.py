@@ -98,6 +98,8 @@ class ObservationCollection(Resource):
                     return self.create_400_error(
                         "{} needs to have a numeric value".format(name)
                     )
+            if "-" in name:
+                name = name.replace("-", "_")
             setattr(observation, name, value)
         observation.observed_at = datetime.datetime.now(datetime.timezone.utc)
         self.database.session.add(observation)
@@ -180,6 +182,8 @@ class ObservationItem(Resource):
                     )
             if name == "observed-at":
                 continue
+            if "-" in name:
+                name = name.replace("-", "_")
             setattr(obs, name, value)
         try:
             self.database.session.commit()
