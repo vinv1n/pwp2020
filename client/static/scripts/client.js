@@ -2,7 +2,8 @@
 //
 // This client is based on the example client implemented in the fourth
 // exercise of the PWP course.  The functions that are directly
-// borrowed from there are marked as such.
+// borrowed from there are marked as such.  Much of the code is more
+// or less modeled after the example client.
 
 "use strict"; // TODO: remove when delivering
 
