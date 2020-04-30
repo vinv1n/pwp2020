@@ -8,9 +8,16 @@
 
 const COLLECTIONJSON = "application/vnd.collection+json";
 const PLAINJSON = "application/json";
+const API_URL = "http://localhost:5000";
 
 function appendObservationRow(body) {
-    $(".resulttable tbody").append(observationRow(body));
+    $(".resulttable tbody").append(observationRow(body.collection.items[0]));
+}
+
+// Directly borrowed from the PWP exercise 4.
+function followLink(event, a, renderer) {
+    event.preventDefault();
+    getResource(API_URL + $(a).attr("href"), renderer);
 }
 
 // Directly borrowed from the PWP exercise 4.
@@ -32,29 +39,53 @@ function getSubmittedObservation(data, status, jqxhr) {
 function observationRow(item) {
     let itemLink = "<a href='"
         + item.href
-        + "'>more...</a>";
-    data = {}
+        + "' onClick='followLink(event, this, renderObservation)'"
+        + ">show</a>";
+    let data = {}
     item.data.forEach(function (entry) {
         data[entry["name"]] = entry["value"];
     });
     return "<tr>"
         + "<td>" + data["location"] + "</td>"
         + "<td>" + data["observed-at"] + "</td>"
+        + "<td>" + itemLink + "</td>"
         + "</tr>";
 }
 
 // Directly borrowed from the PWP exercise 4.
 function renderError(jqxhr) {
-    let msg = jqxhr.responseJSON["collection"]["error"]["message"];
+    let msg;
+    if (!(jqxhr.responseJSON)) {
+        msg = "An error happened!";
+    } else {
+        msg = jqxhr.responseJSON["collection"]["error"]["message"];
+    }
     $("div.notification").html("<p class='error'>" + msg + "</p>");
 }
 
 function renderObservation(body) {
+    let rel_mapping = {
+        "observations-by-location": "All observations from this location",
+    };
     let nav = $("div.navigation");
     nav.empty();
+    $(".resulttable thead").empty();
+    $(".resulttable tbody").empty();
     let item = body.collection.items[0];
+    let collectionHref = body.collection.href;
+    nav.append(
+        "<a href='"
+        + collectionHref
+        + "' onClick='followLink(event, this, renderObservations)'"
+        + ">All observations</a>"
+    );
     item.links.forEach(function (it) {
-        nav.append("<a href='" + it.href + "'>" + it.rel + "</a>");
+        nav.append(
+            " <a href='"
+            + it.href
+            + "' onClick='followLink(event, this, renderObservations)'"
+            + ">" + rel_mapping[it.rel] + "</a>"
+        );
     });
     renderObservationForm(item.data, item.href, "PUT");
 }
@@ -68,7 +99,6 @@ function renderObservationForm(data, href, method) {
     data.forEach(function (item) {
         new_data[item.name.replace("-", "_")] = item;
     });
-    console.log(new_data);
     let order = [
         "location",
         "observed_at",
@@ -78,7 +108,6 @@ function renderObservationForm(data, href, method) {
         "humidity",
     ];
     order.forEach(function (item) {
-        console.log(new_data[item]);
         if (item in new_data) {
             form.append("<label>" + new_data[item].prompt + "</label>");
             form.append(
@@ -93,7 +122,21 @@ function renderObservationForm(data, href, method) {
 }
 
 function renderObservations(body) {
-    $("div.navigation").empty();
+    let rel_mapping = {
+        "all-observations": "All observations",
+    };
+    let nav = $("div.navigation");
+    nav.empty();
+    if ("links" in body.collection) {
+        body.collection.links.forEach(function (it) {
+            nav.append(
+                " <a href='"
+                + it.href
+                + "' onClick='followLink(event, this, renderObservations)'"
+                + ">" + rel_mapping[it.rel] + "</a>"
+            );
+        });
+    }
     $(".resulttable thead").html(
         "<tr><th>Location</th><th>Observed at</th></tr>"
     );
@@ -125,15 +168,22 @@ function sendData(href, method, item, postProcessor) {
 function submitObservation(event) {
     event.preventDefault();
 
-    let data = {};
+    let data = {
+        template: {
+            data: []
+        }
+    };
     let form = $("div.form form");
-    console.log($("div.form form input"));
-    $.makeArray($("div.form form input")).forEach(function (item) {
-        data[item.name] = item.value;
+    $.makeArray($("div.form form input[type!='submit']")).forEach(function (item) {
+        let it = {
+            name: item.name,
+            value: item.value,
+        };
+        data.template.data.push(it);
     });
-    sendData(form.attr("action"), form.attr("method"), data, getSubmittedObservation);
+    sendData(API_URL + form.attr("action"), form.attr("method"), data, getSubmittedObservation);
 }
 
 $(document).ready(function () {
-    getResource("http://localhost:5000/api/observations/", renderObservations);
+    getResource(API_URL + "/api/observations/", renderObservations);
 });
