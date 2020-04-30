@@ -39,3 +39,12 @@ observation_search_links = {
         "key": "device"
     }
 }
+
+device = {
+    "name": {
+        "prompt": "A name for the device"
+    },
+    "location": {
+        "prompt": "The location of the device in coordinates"
+    }
+}

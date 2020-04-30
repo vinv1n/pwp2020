@@ -1,19 +1,23 @@
 from flask_restful import Resource
-from flask import request, Response, jsonify, abort, url_for
+from flask import json, request, Response, jsonify, abort, url_for
 from api.database import Device
 
 from .utils import DeviceHypermediaBuilder
+from .resource_maps import device
 
 class DeviceCollection(Resource):
 
     def __init__(self, db):
         self.database = db
-        self.hypermedia = DeviceHypermediaBuilder
+        self.hypermedia = DeviceHypermediaBuilder(device)
 
-    def get(self, User):
+    def get(self):
         """ Get all devices """
-        answer = self.database.session.query(Device).filter().all()
-        return jsonify(answer)
+        devicelist = self.database.session.query(Device).all()
+        collection = self.hypermedia.get_collection_entry(devicelist)
+
+        return Response(json.dumps(collection), status=200, mimetype="application/vnd.collection+json")
+
 
     def post(self, User):
         """ Create a new device """ 

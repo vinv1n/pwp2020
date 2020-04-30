@@ -8,9 +8,13 @@ from .config import Config
 
 COLLECTIONJSON = "application/vnd.collection+json"
 
+expose_headers = [
+    "Location",
+]
+
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, expose_headers=expose_headers)
 
 # load flask configurations
 config = Config()

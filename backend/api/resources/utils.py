@@ -167,7 +167,7 @@ class DeviceHypermediaBuilder(HypermediaBuilder):
     base_url = "/api/devices"
 
     def __init__(self, attributes):
-        super.__init__(attributes)
+        super().__init__(attributes)
 
     def get_collection_inner_entry(self, device):
         data = self.create_data_entry(device)
