@@ -115,8 +115,16 @@ class ObservationCollection(Resource):
         return Response(status=201, headers=headers)
 
     def get(self):
-        observations = self.database.session.query(Observation).all()
-        body = ObservationCollectionBuilder(observations)
+        observations = self.database.session.query(Observation)
+        args = {}
+        if "coordinates" in request.args:
+            coords = request.args["coordinates"]
+            observations = observations.filter(
+                Observation.location == coords
+            )
+            args["coordinates"] = coords
+        observations = observations.all()
+        body = ObservationCollectionBuilder(observations, **args)
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
 
@@ -246,9 +254,14 @@ def get_observation_template(data=False):
 
 class ObservationCollectionBuilder(CollectionJsonBuilder):
 
-    def __init__(self, observations):
+    def __init__(self, observations, **kwargs):
         super().__init__()
-        self.add_href(api.url_for(ObservationCollection))
+        self.add_href(api.url_for(ObservationCollection, **kwargs))
+        if kwargs:
+            self.add_link(
+                "all-observations",
+                api.url_for(ObservationCollection)
+            )
         self.add_template(get_observation_template())
         self.add_items()
         self.add_observations(observations)
