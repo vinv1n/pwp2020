@@ -1,7 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from sqlalchemy import Integer, Float, String, create_engine, \
-    Table, ForeignKey, Column, Enum
+    Table, ForeignKey, Column, Enum, DateTime
 
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
@@ -52,6 +52,7 @@ class Observation(Base):
     temperature = Column(Float, nullable=True)
     pressure = Column(Float, nullable=True)
     wind = Column(Float, nullable=True)
+    wind_direction = Column(String(2), nullable=True)
     condition = Column(Enum(WeatherTypes))
 
     # free description of the observation
@@ -62,7 +63,10 @@ class Observation(Base):
     user = relationship(User, back_populates="observations")
 
     # observation's location information
-    location = String(300)
+    location = Column(String(300))
+
+    # time of the observation
+    observed_at = Column(DateTime)
 
 
 class Device(Base):
