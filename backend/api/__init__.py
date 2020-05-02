@@ -5,6 +5,9 @@ from flask_restful import Api
 from .database import WeatherTalkDatabase
 from .config import Config
 
+
+COLLECTIONJSON = "application/vnd.collection+json"
+
 expose_headers = [
     "Location",
 ]
