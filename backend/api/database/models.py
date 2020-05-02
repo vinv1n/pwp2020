@@ -24,7 +24,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
-    observations = relationship("Observation", back_populates="user")
+    user_observations = relationship("Observation", back_populates="user")
 
     # relationships
     devices = relationship("Device")
@@ -44,7 +44,7 @@ class Observation(Base):
 
     """
 
-    __tablename__ = "observation"
+    __tablename__ = "observations"
     id = Column(Integer, primary_key=True)
 
     # observation related fields
@@ -60,7 +60,7 @@ class Observation(Base):
 
     # connect observations to a user
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship(User, back_populates="observations")
+    user = relationship(User, back_populates="user_observations")
 
     # observation's location information
     location = Column(String(300))

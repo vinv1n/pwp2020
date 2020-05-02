@@ -5,17 +5,14 @@ from flask_restful import Resource
 from flask import json, request, Response, jsonify, abort, url_for
 from sqlalchemy.exc import IntegrityError
 
-from .. import COLLECTIONJSON, api
 from api.database import User, Observation
 
-from .utils import (
-    ObservationHypermediaBuilder,
-    CollectionJsonBuilder,
-    CollectionJsonItemBuilder,
-    create_error_response,
-    create_500_error,
-)
+from .utils import ObservationHypermediaBuilder, CollectionJsonBuilder, CollectionJsonItemBuilder, \
+    create_error_response, create_500_error
+
 from .resource_maps import observation
+
+from .. import COLLECTIONJSON, api
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +23,10 @@ class ObservationCollection(Resource):
         self.database = db
 
     @staticmethod
-    def create_400_error(message=None):
+    def create_400_error(message=""):
         if not message:
             message = "The observation template had incorrect contents"
+
         return create_error_response(400, "Bad Request", message)
 
     def post(self):
@@ -77,13 +75,13 @@ class ObservationCollection(Resource):
             data = body["template"]["data"]
         except KeyError:
             return self.create_400_error()
+
         for item in data:
             name = item.get("name")
             value = item.get("value")
             if not all((name, value)):
-                return self.create_400_error(
-                    "{} is a required field".format(name)
-                )
+                return self.create_400_error(f"{name} is a required field")
+
             # TODO: this should be done in a better way
             numeric_fields = [
                 "temperature",
@@ -95,13 +93,15 @@ class ObservationCollection(Resource):
                 try:
                     value = float(value)
                 except ValueError:
-                    return self.create_400_error(
-                        "{} needs to have a numeric value".format(name)
-                    )
+                    return self.create_400_error(f"{name} needs to have a numeric value")
+
             if "-" in name:
                 name = name.replace("-", "_")
+
             setattr(observation, name, value)
+
         observation.observed_at = datetime.datetime.now(datetime.timezone.utc)
+
         self.database.session.add(observation)
         try:
             self.database.session.commit()
@@ -116,13 +116,15 @@ class ObservationCollection(Resource):
 
     def get(self):
         observations = self.database.session.query(Observation)
+
         args = {}
-        if "coordinates" in request.args:
-            coords = request.args["coordinates"]
+        coords = request.args.get("coordinates", "")
+        if coords:
             observations = observations.filter(
                 Observation.location == coords
             )
             args["coordinates"] = coords
+
         observations = observations.all()
         body = ObservationCollectionBuilder(observations, **args)
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
@@ -137,6 +139,7 @@ class ObservationItem(Resource):
     def create_400_error(message=None):
         if not message:
             message = "The observation template had incorrect contents"
+
         return create_error_response(400, "Bad Request", message)
 
     @staticmethod
@@ -155,6 +158,7 @@ class ObservationItem(Resource):
         )
         if not obs:
             return self.create_404_error()
+
         body = ObservationCollectionBuilder(obs)
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
@@ -162,18 +166,19 @@ class ObservationItem(Resource):
         obs = self.database.session.query(Observation).filter(
             Observation.id == observation
         ).first()
+
         body = request.get_json(force=True)
         try:
             data = body["template"]["data"]
         except KeyError:
             return self.create_400_error()
+
         for item in data:
             name = item.get("name")
             value = item.get("value")
             if not all((name, value)):
-                return self.create_400_error(
-                    "{} is a required field".format(name)
-                )
+                return self.create_400_error(f"{name} is a required field")
+
             # TODO: this should be done in a better way
             numeric_fields = [
                 "temperature",
@@ -185,19 +190,22 @@ class ObservationItem(Resource):
                 try:
                     value = float(value)
                 except ValueError:
-                    return self.create_400_error(
-                        "{} needs to have a numeric value".format(name)
-                    )
+                    return self.create_400_error(f"{name} needs to have a numeric value")
+
             if name == "observed-at":
                 continue
+
             if "-" in name:
                 name = name.replace("-", "_")
+
             setattr(obs, name, value)
+
         try:
             self.database.session.commit()
         except IntegrityError:
             self.database.session.rollback()
             return self.create_400_error()
+
         return Response(status=204)
 
 
@@ -207,11 +215,13 @@ class ObservationItem(Resource):
         )
         if not obs:
             return self.create_404_error()
+
         try:
             self.database.session.delete(obs)
         except IntegrityError:
             self.database.session.rollback()
             return self.create_500_error()
+
         return Response(status=204)
 
 
@@ -262,6 +272,7 @@ class ObservationCollectionBuilder(CollectionJsonBuilder):
                 "all-observations",
                 api.url_for(ObservationCollection)
             )
+
         self.add_template(get_observation_template())
         self.add_items()
         self.add_observations(observations)
@@ -277,8 +288,10 @@ class ObservationCollectionBuilder(CollectionJsonBuilder):
                 name = i["name"]
                 if "-" in name:
                     name = name.replace("-", "_")
+
                 value = getattr(observation, name)
                 item.add_data_entry(i["name"], value)
+
             self.add_item(item)
 
 

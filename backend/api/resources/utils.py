@@ -9,7 +9,7 @@ from typing import Dict, List, Union, Any
 from .. import COLLECTIONJSON
 from .resource_maps import observation_search_links
 
-from ..database import Observation
+from ..database import Observation, Device
 
 
 class RequestError(int, Enum):
