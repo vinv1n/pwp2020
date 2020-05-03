@@ -79,6 +79,7 @@ class Device(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(150))
+    location = Column(String(300), nullable=True)
 
     user_id = Column(Integer, ForeignKey("users.id"))
 
