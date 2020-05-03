@@ -92,24 +92,24 @@ class DeviceItem(Resource):
         message = "The requested observation could not be found"
         return create_error_response(404, "Not found", message)
 
-    def get(self, device_id):
+    def get(self, device):
         """ Get details of a single device """
         dev = self.database.session.query(Device).filter(
-                    Device.id == device_id
-                ).first()
-
+                    Device.id == device
+                )
         if not dev:
-            return abort(404)
+            return self.create_404_error()
+        logger.error(dev)
+        body = DeviceCollectionBuilder(dev)
+        return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
-        return Response(dev, status=200)
-
-    def put(self, device_id):
+    def put(self, device):
         """ Update device details """
         if not request.json:
             abort(415)
         
         dev = self.database.session.query(Device).filter(
-                    Device.id == device_id
+                    Device.id == device
                 ).first()
 
         dev.name = request.json["template"]["name"],
@@ -120,10 +120,10 @@ class DeviceItem(Resource):
         return Response(status=204)
 
 
-    def delete(self, device_id):
+    def delete(self, device):
         """ Delete a device and all its details """
         dev = self.database.session.query(Device).filter(
-                    Device.id == device_id
+                    Device.id == device
                 ).first()
         return Response(status=204)
 
