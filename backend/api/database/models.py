@@ -24,6 +24,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
+    email = Column(String, nullable=False)
+    
     user_observations = relationship("Observation", back_populates="user")
 
     # relationships
