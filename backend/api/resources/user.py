@@ -18,9 +18,8 @@ logger = logging.getLogger(__name__)
 
 class UserCollection(Resource):
 
-    def __init__(self, database):
-        super().__init__()
-        self.db = database
+    def __init__(self, db):
+        self.db = db
 
     def _get_data(self, entry):
         if not entry:
@@ -57,12 +56,11 @@ class UserCollection(Resource):
 
         self.db.session.add(user)
         try:
-            self.session.commit()
+            self.db.session.commit()
         except Exception as e:
             logger.warning("Error while creating user. Error %s (%s)", e, e.__class__)
             self.db.session.rollback()
-
-        headers = {"Location": api.url_for(UserItem, observation=user.id)}
+        headers = {"Location": api.url_for(UserItem, user=user.id)}
         return Response(headers=headers, status=201, content_type=COLLECTIONJSON)
 
 

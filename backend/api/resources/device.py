@@ -8,7 +8,6 @@ from api.database import Device
 
 from .. import COLLECTIONJSON, api
 
-from .utils import DeviceHypermediaBuilder
 from .utils import (
     CollectionJsonBuilder,
     CollectionJsonItemBuilder,
@@ -24,7 +23,6 @@ class DeviceCollection(Resource):
 
     def __init__(self, db):
         self.database = db
-        self.hypermedia = DeviceHypermediaBuilder(device)
 
     @staticmethod
     def create_400_error(message=None):
