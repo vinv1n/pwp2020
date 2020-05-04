@@ -82,12 +82,12 @@ class DeviceItem(Resource):
     @staticmethod
     def create_400_error(message=None):
         if not message:
-            message = "The observation template had incorrect contents"
+            message = "The device template had incorrect contents"
         return create_error_response(400, "Bad Request", message)
 
     @staticmethod
     def create_404_error():
-        message = "The requested observation could not be found"
+        message = "The requested device could not be found"
         return create_error_response(404, "Not found", message)
 
     def get(self, device):
@@ -97,36 +97,55 @@ class DeviceItem(Resource):
                 )
         if not dev:
             return self.create_404_error()
-        logger.error(dev)
+
         body = DeviceCollectionBuilder(dev)
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
     def put(self, device):
         """ Update device details """
-        if not request.json:
-            abort(415)
-        
-        dev = self.database.session.query(Device).filter(
-                    Device.id == device
-                ).first()
+        dev = self.database.session.query(Device).filter_by(
+                    id = device
+            ).first()
 
-        dev.name = request.json["template"]["name"],
-        dev.latitude = request.json["template"]["latitude"],
-        dev.longitude = request.json["template"]["latitude"],
+        body = request.get_json(force=True)
+
+        try:
+            data = body["template"]["data"]
+        except KeyError:
+            return self.create_400_error()
+
+        for item in data:
+            name = item.get("name")
+            value = item.get("value")
+            if not all((name, value)):
+                return self.create_400_error(
+                    "{} is a required field".format(name)
+                )
+            if "-" in name:
+                name = name.replace("-", "_")
+            setattr(dev, name, value)
+
         self.database.session.add(dev)
         self.database.session.commit()
         return Response(status=204)
 
 
+
     def delete(self, device):
-        """ Delete a device and all its details """
         dev = self.database.session.query(Device).filter(
-                    Device.id == device
-                ).first()
+            Device.id == device
+        ).first()
+        if not dev:
+            return self.create_404_error()
+
+        try:
+            self.database.session.delete(dev)
+            self.database.session.commit()
+        except IntegrityError:
+            self.database.session.rollback()
+            return self.create_500_error()
+
         return Response(status=204)
-
-
-
 
 
 device_template = [
