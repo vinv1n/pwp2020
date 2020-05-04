@@ -212,12 +212,13 @@ class ObservationItem(Resource):
     def delete(self, observation):
         obs = self.database.session.query(Observation).filter(
             Observation.id == observation
-        )
+        ).first()
         if not obs:
             return self.create_404_error()
 
         try:
             self.database.session.delete(obs)
+            self.database.session.commit()
         except IntegrityError:
             self.database.session.rollback()
             return self.create_500_error()
