@@ -31,6 +31,12 @@ class UserCollection(Resource):
 
         return template.get("data", [])
 
+    def get(self):
+        users = self.db.session.query(User).all()
+
+        collection = UserCollectionBuilder(users)
+        return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
+
 
     def post(self):
         entry = request.get_json(force=True)
@@ -45,6 +51,7 @@ class UserCollection(Resource):
         if not data:
             return create_error_response(400, "Bad Request", "")
 
+
         user = User()
         for fields in data:
             name = fields.get("name")
@@ -52,8 +59,15 @@ class UserCollection(Resource):
             if not all((name, value)):
                 return create_error_response(400, "Bad Request", "")
 
-            setattr(user, name, value)
+            if name == "name":
+                userexists_check = self.db.session.query(
+                    self.db.session.query(User).filter_by(name = value).exists()
+                ).scalar()
+                if userexists_check:
+                    return create_error_response(409, f"User with name {value} already exists", "")
+            
 
+            setattr(user, name, value)
         self.db.session.add(user)
         try:
             self.db.session.commit()
@@ -126,7 +140,20 @@ class UserItem(Resource):
 
 
 def get_user_template(data: bool = False) -> Dict:
-    return {}
+    return [
+              {
+        "name": "name",
+        "value": "John Doe"
+      },
+      {
+        "name": "email",
+        "value": "john@doe.com"
+      },
+      {
+        "name": "password",
+        "value": "secret"
+      }
+    ]
 
 
 class UserCollectionBuilder(CollectionJsonBuilder):
@@ -164,7 +191,8 @@ class UserItemBuilder(CollectionJsonItemBuilder):
     def __init__(self, user, test):
         super().__init__()
         self.add_href(api.url_for(UserItem, user=user))
-        self.add_link(
-            "",  # FIXME and the 
-            api.url_for(UserItem, test=test)
-        )
+
+        # self.add_link(
+        #     "",  # FIXME and the 
+        #     api.url_for(UserItem, test=test)
+        # )
