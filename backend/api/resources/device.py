@@ -164,14 +164,9 @@ device_template = [
 
 class DeviceCollectionBuilder(CollectionJsonBuilder):
 
-    def __init__(self, devices, **kwargs):
+    def __init__(self, devices):
         super().__init__()
-        self.add_href(api.url_for(DeviceCollection, **kwargs))
-        if kwargs:
-            self.add_link(
-                "all-devices",
-                api.url_for(DeviceCollection)
-            )
+        self.add_href(api.url_for(DeviceCollection))
         self.add_template(device_template)
         self.add_items()
         self.add_devices(devices)
