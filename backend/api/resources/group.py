@@ -71,7 +71,11 @@ class UsersGroupCollection(Resource):
         return Response(status=201, headers=headers)
 
     def get(self, user):
-        pass
+        devicegroup_list = self.database.session.query(DeviceGroup).filter_by( DeviceGroup.user_id == user).all()
+        collection = DeviceGroupCollectionBuilder(devicegroup_list)
+
+        return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
+
 
 
 class UsersGroupItem(Resource):
@@ -84,3 +88,50 @@ class UsersGroupItem(Resource):
 
     def delete(self, user, group):
         pass
+
+users_group_template = [
+        {
+            "name": "name",
+            "value": "",
+            "prompt": "Identifying name for the device group.",
+        },
+        {
+            "name": "user",
+            "value": "",
+            "prompt": "Location of the device."
+        }
+    ]
+
+class DeviceGroupCollectionBuilder(CollectionJsonBuilder):
+
+    def __init__(self, devices):
+        super().__init__()
+        self.add_href(api.url_for(UsersGroupCollection))
+        self.add_template(users_group_template)
+        self.add_items()
+        self.add_devices(devices)
+
+    def add_devices(self, devices):
+        data = users_group_template
+        for device in devices:
+            item = DeviceGroupItemBuilder(
+                device.id
+            )
+            for i in data:
+                name = i["name"]
+                if "-" in name:
+                    name = name.replace("-", "_")
+                value = getattr(device, name)
+                item.add_data_entry(i["name"], value)
+            self.add_item(item)
+
+
+class DeviceGroupItemBuilder(CollectionJsonItemBuilder):
+
+    def __init__(self, device):
+        super().__init__()
+        self.add_href(api.url_for(UsersGroupItem, device=device))
+        self.add_link(
+            "devices",
+            api.url_for(UsersGroupCollection)
+        )
