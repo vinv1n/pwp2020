@@ -126,7 +126,15 @@ class ObservationCollection(Resource):
             args["coordinates"] = coords
 
         observations = observations.all()
-        body = ObservationCollectionBuilder(observations, **args)
+        body = ObservationCollectionBuilder(observations)
+        for key, value in args.items():
+            values = {
+                key: value
+            }
+            body.add_link(
+                f"observations-by-{key}",
+                api.url_for(ObservationCollection, **values)
+            )
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
 
@@ -265,15 +273,9 @@ def get_observation_template(data=False):
 
 class ObservationCollectionBuilder(CollectionJsonBuilder):
 
-    def __init__(self, observations, **kwargs):
+    def __init__(self, observations):
         super().__init__()
-        self.add_href(api.url_for(ObservationCollection, **kwargs))
-        if kwargs:
-            self.add_link(
-                "all-observations",
-                api.url_for(ObservationCollection)
-            )
-
+        self.add_href(api.url_for(ObservationCollection))
         self.add_template(get_observation_template())
         self.add_items()
         self.add_observations(observations)
