@@ -124,10 +124,16 @@ function renderObservationForm(data, href, method) {
 
 function renderObservations(body) {
     let rel_mapping = {
-        "all-observations": "All observations",
+        "observations-by-coordinates": "All observations from this location",
     };
     let nav = $("div.navigation");
     nav.empty();
+    nav.append(
+        "<a href='"
+        + body.collection.href
+        + "' onClick='followLink(event, this, renderObservations)'"
+        + ">All observations</a>"
+    );
     if ("links" in body.collection) {
         body.collection.links.forEach(function (it) {
             nav.append(
