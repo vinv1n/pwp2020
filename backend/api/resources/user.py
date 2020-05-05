@@ -83,9 +83,9 @@ class UserItem(Resource):
     def __init__(self, db):
         self.db = db
 
-    def get(self, user_id):
+    def get(self, user):
         user = self.db.session.query(User).filter(
-            User.id == user_id
+            User.id == user
         )
         if not user:
             return create_error_response(404, "Not Found")
@@ -93,9 +93,9 @@ class UserItem(Resource):
         response = UserCollectionBuilder(user)
         return Response(json.dumps(response), status=200, content_type=COLLECTIONJSON)
 
-    def put(self, user_id):
+    def put(self, user):
         user = self.db.session.query(User).filter(
-            User.id == user_id
+            User.id == user
         ).first()
         if not user:
             return create_error_response(404, "Not Found")
@@ -127,9 +127,9 @@ class UserItem(Resource):
 
         return Response(status=204)
 
-    def delete(self, user_id):
+    def delete(self, user):
         user = self.db.session.query(User).filter(
-            User.id == user_id
+            User.id == user
         ).first()
         if not user:
             return create_error_response(404, "Not Found")
