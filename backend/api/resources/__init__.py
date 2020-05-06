@@ -7,7 +7,6 @@ from .entry import EntryPoint
 
 
 __all__ = [
-    "LoginApi",
     "DeviceItem",
     "DeviceCollection",
     "EntryPoint",
