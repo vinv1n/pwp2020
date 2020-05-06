@@ -21,12 +21,18 @@ logger = logging.getLogger(__name__)
 
 class GroupCollection(Resource):
 
+    def __init__(self, db):
+        self.database = db
+        
     def post(self, user):
         pass
 
 
 class GroupItem(Resource):
 
+    def __init__(self, db):
+        self.database = db
+        
     def get(self, group):
         pass
 
@@ -38,6 +44,10 @@ class GroupItem(Resource):
 
 
 class UsersGroupCollection(Resource):
+
+    def __init__(self, db):
+        self.database = db
+
     def post(self, user):
         device_group = DeviceGroup()
         body = request.get_json(force=True)
@@ -80,6 +90,9 @@ class UsersGroupCollection(Resource):
 
 class UsersGroupItem(Resource):
 
+    def __init__(self, db):
+        self.database = db
+        
     def get(self, user, group):
         pass
 
