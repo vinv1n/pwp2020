@@ -48,3 +48,9 @@ device = {
         "prompt": "The location of the device in coordinates"
     }
 }
+
+device_group = {
+    "name": {
+        "prompt": "A name for the device group"
+    }
+}
