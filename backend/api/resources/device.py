@@ -95,7 +95,7 @@ class DeviceItem(Resource):
         """ Get details of a single device """
         dev = self.database.session.query(Device).filter(
                     Device.id == device
-                )
+                ).first()
         if not dev:
             return self.create_404_error()
 
@@ -107,6 +107,8 @@ class DeviceItem(Resource):
         dev = self.database.session.query(Device).filter_by(
                     id = device
             ).first()
+        if not dev:
+            return self.create_404_error()
 
         body = request.get_json(force=True)
 
