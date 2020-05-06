@@ -67,7 +67,8 @@ class UsersGroupCollection(Resource):
             if "-" in name:
                 name = name.replace("-", "_")
             setattr(device_group, name, value)
-
+            
+        setattr(device_group, "user_id", user)
         self.database.session.add(device_group)
         try:
             self.database.session.commit()
@@ -82,7 +83,13 @@ class UsersGroupCollection(Resource):
         return Response(status=201, headers=headers)
 
     def get(self, user):
-        devicegroup_list = self.database.session.query(DeviceGroup).all()
+        devicegroup_list = self.database.session.query(DeviceGroup).filter(
+            DeviceGroup.user_id == user
+        ).all()
+        # devicegroup_list = self.database.session.query(DeviceGroup).filter(
+        # )
+        # logger.error(f"{devicegroup_list} ----- {user}")
+        # logger.error(f"{devicegroup_list[0].user_id}")
         collection = DeviceGroupCollectionBuilder(devicegroup_list, user)
 
         return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
