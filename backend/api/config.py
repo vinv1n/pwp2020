@@ -6,7 +6,7 @@ import random
 
 USER = os.environ.get("DB_USER", "weathertalk")
 PASSWORD = os.environ.get("DB_PASSWORD", "")
-DB_HOST = os.environ.get("DB_HOST", "postgres")
+DB_HOST = os.environ.get("DB_HOST", "localhost")
 
 
 class Config:

@@ -1,0 +1,44 @@
+version: "3.5"
+
+services:
+    backend-test:
+        build:
+            dockerfile: backend/docker/Dockerfile
+            context: .
+        environment:
+            - DB_USER=weathertalk
+            - DB_PASSWORD=weathertalkdatabasepasswordplzchange
+            - DB_HOST=postgres-test
+        ports:
+            - 5000:5000
+        links:
+            - postgres-test
+        networks:
+            - internal
+        command: ["postgres-test", "testing"]
+
+    nginx:
+        image: nginx:1.17.6
+        ports:
+            - "80:80"
+        links:
+            - backend-test
+            - postgres-test
+        volumes:
+            - ./config/nginx-test.conf:/etc/nginx/conf.d/nginx.conf
+        networks:
+            - internal
+
+    postgres-test:
+        image: postgres:12.2-alpine
+        environment:
+            POSTGRES_PASSWORD: weathertalkdatabasepasswordplzchange
+            POSTGRES_USER: weathertalk
+            POSTGRES_DB: weathertalk
+
+        networks:
+            - internal
+
+networks:
+    internal:
+        driver: bridge

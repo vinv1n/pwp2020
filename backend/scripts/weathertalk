@@ -7,4 +7,9 @@ do
     sleep 5
 done
 
-gunicorn --workers 5 wsgi:app --bind 0.0.0.0:5000
+if [ "$2" == "testing" ]; then
+    gunicorn --workers 5 wsgi:app --bind 0.0.0.0:5000 --daemon
+    python3 -m unittest api/tests/test_endpoints.py
+else
+    gunicorn --workers 5 wsgi:app --bind 0.0.0.0:5000
+fi
