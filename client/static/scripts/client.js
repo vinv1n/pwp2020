@@ -15,6 +15,28 @@ function appendObservationRow(body) {
     $(".resulttable tbody").append(observationRow(body.collection.items[0]));
 }
 
+function enterApi() {
+    getResource(API_URL + "/api/", enterObservations);
+}
+
+function enterObservations(body) {
+    let found = 0;
+
+    body.collection.links.forEach(function (item) {
+        if (item.rel === "observations") {
+            getResource(API_URL + item.href, renderObservations);
+            found = 1;
+        }
+    });
+    if (!found) {
+        $("div.notification").html(
+            "<p class='error'>"
+            + "No link pointing towards the observations found."
+            + "</p>"
+        );
+    }
+}
+
 // Directly borrowed from the PWP exercise 4.
 function followLink(event, a, renderer) {
     event.preventDefault();
@@ -192,5 +214,5 @@ function submitObservation(event) {
 }
 
 $(document).ready(function () {
-    getResource(API_URL + "/api/observations/", renderObservations);
+    enterApi();
 });
