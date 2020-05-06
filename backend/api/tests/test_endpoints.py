@@ -113,7 +113,7 @@ class EndpointTests(unittest.TestCase):
         url = f"{self.url}/foobar"
         resp = self.session.get(url, headers=self._get_header)
         self.assertEqual(resp.status_code, 400)
-        resp = self.session.get(f"{self.url}/111111111111111111111111111111111111111111111111", headers=self._get_header)
+        resp = self.session.get(f"{self.url}/1111", headers=self._get_header)
         self.assertEqual(resp.status_code, 404)
 
     def test_valid_put(self):
