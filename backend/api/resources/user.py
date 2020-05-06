@@ -9,6 +9,7 @@ from typing import Dict
 from api.database import User
 
 from .utils import CollectionJsonBuilder, CollectionJsonItemBuilder, create_error_response
+from .group import UsersGroupCollection
 
 from .. import api, COLLECTIONJSON
 
@@ -191,8 +192,5 @@ class UserItemBuilder(CollectionJsonItemBuilder):
     def __init__(self, user, test):
         super().__init__()
         self.add_href(api.url_for(UserItem, user=user))
+        self.add_link("owned-device-groups", api.url_for(UsersGroupCollection, user=user))
 
-        # self.add_link(
-        #     "",  # FIXME and the 
-        #     api.url_for(UserItem, test=test)
-        # )
