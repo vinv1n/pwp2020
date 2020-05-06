@@ -5,8 +5,7 @@ from flask_restful import Resource
 from flask import json, request, Response, jsonify, abort, url_for
 from sqlalchemy.exc import IntegrityError
 
-from api.database import DeviceGroup
-
+from api.database import DeviceGroup, User
 
 from .. import COLLECTIONJSON, api
 
@@ -68,8 +67,14 @@ class UsersGroupCollection(Resource):
                 name = name.replace("-", "_")
             setattr(device_group, name, value)
         
-        #TODO should check if the user exists and rturn 404 if not
+        # Check if the user exists
+        check_user = self.db.session.query(User).filter(
+            User.id == user
+        ).first()
+        if not user:
+            return create_error_response(404, "Not Found")
         setattr(device_group, "user_id", user)
+            
         self.database.session.add(device_group)
         try:
             self.database.session.commit()
@@ -99,7 +104,6 @@ class UsersGroupItem(Resource):
         self.database = db
         
     def get(self, user, group):
-        # TODO fix the query here. Doesn't seem to work.
         devicegroup_list = self.database.session.query(DeviceGroup).filter(
             DeviceGroup.user_id == user,
             DeviceGroup.id == group
@@ -108,10 +112,52 @@ class UsersGroupItem(Resource):
         return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
 
     def put(self, user, group):
-        pass
+        device_group = self.database.session.query(DeviceGroup).filter_by(
+            DeviceGroup.user_id == user,
+            DeviceGroup.id == group
+        ).first()
+        if not device_group:
+            return self.create_404_error()
+
+        body = request.get_json(force=True)
+
+        try:
+            data = body["template"]["data"]
+        except KeyError:
+            return self.create_400_error()
+
+        for item in data:
+            name = item.get("name")
+            value = item.get("value")
+            if not all((name, value)):
+                return self.create_400_error(
+                    "{} is a required field".format(name)
+                )
+            if "-" in name:
+                name = name.replace("-", "_")
+            setattr(device_group, name, value)
+
+        self.database.session.add(device_group)
+        self.database.session.commit()
+        return Response(status=204)
+        
 
     def delete(self, user, group):
-        pass
+        device_group = self.database.session.query(DeviceGroup).filter_by(
+            DeviceGroup.user_id == user,
+            DeviceGroup.id == group
+        ).first()
+        if not device_group:
+            return self.create_404_error()
+        try:
+            self.database.session.delete(device_group)
+            self.database.session.commit()
+        except IntegrityError:
+            self.database.session.rollback()
+            return self.create_500_error()
+
+        return Response(status=204)
+        
 
 users_group_template = [
         {
