@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from api.database import DeviceGroup
 
+
 from .. import COLLECTIONJSON, api
 
 from .utils import (
@@ -81,8 +82,8 @@ class UsersGroupCollection(Resource):
         return Response(status=201, headers=headers)
 
     def get(self, user):
-        devicegroup_list = self.database.session.query(DeviceGroup).filter_by( DeviceGroup.user_id == user).all()
-        collection = DeviceGroupCollectionBuilder(devicegroup_list)
+        devicegroup_list = self.database.session.query(DeviceGroup).all()
+        collection = DeviceGroupCollectionBuilder(devicegroup_list, user)
 
         return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
 
@@ -107,44 +108,43 @@ users_group_template = [
             "name": "name",
             "value": "",
             "prompt": "Identifying name for the device group.",
-        },
-        {
-            "name": "user",
-            "value": "",
-            "prompt": "Location of the device."
         }
     ]
 
 class DeviceGroupCollectionBuilder(CollectionJsonBuilder):
 
-    def __init__(self, devices):
+    def __init__(self, devicegroups, user):
+        from .user import UserItem
+
         super().__init__()
-        self.add_href(api.url_for(UsersGroupCollection))
+        self.add_href(api.url_for(UsersGroupCollection, user=user))
         self.add_template(users_group_template)
         self.add_items()
-        self.add_devices(devices)
+        self.add_device_groups(devicegroups, user)
+        self.add_link(
+            "user",
+            api.url_for(UserItem, user=user)
+        )
 
-    def add_devices(self, devices):
+    def add_device_groups(self, devicegroups, user):
         data = users_group_template
-        for device in devices:
+        for devicegroup in devicegroups:
             item = DeviceGroupItemBuilder(
-                device.id
+                user,
+                devicegroup
             )
             for i in data:
                 name = i["name"]
                 if "-" in name:
                     name = name.replace("-", "_")
-                value = getattr(device, name)
+                value = getattr(devicegroup, name)
                 item.add_data_entry(i["name"], value)
             self.add_item(item)
 
 
 class DeviceGroupItemBuilder(CollectionJsonItemBuilder):
 
-    def __init__(self, device):
+    def __init__(self, user, group):
         super().__init__()
-        self.add_href(api.url_for(UsersGroupItem, device=device))
-        self.add_link(
-            "devices",
-            api.url_for(UsersGroupCollection)
-        )
+        self.add_href(api.url_for(UsersGroupItem, user=user, group=group.id))
+
