@@ -203,14 +203,20 @@ function submitObservation(event) {
         }
     };
     let form = $("div.form form");
-    $.makeArray($("div.form form input[type!='submit']")).forEach(function (item) {
+    let dataInputs = $.makeArray($("div.form form input[type!='submit']"));
+    dataInputs.forEach(function (item) {
         let it = {
             name: item.name,
             value: item.value,
         };
         data.template.data.push(it);
     });
-    sendData(API_URL + form.attr("action"), form.attr("method"), data, getSubmittedObservation);
+    sendData(
+        API_URL + form.attr("action"),
+        form.attr("method"),
+        data,
+        getSubmittedObservation
+    );
 }
 
 $(document).ready(function () {
