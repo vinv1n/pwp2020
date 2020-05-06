@@ -160,6 +160,11 @@ class ObservationItem(Resource):
         return create_500_error()
 
     def get(self, observation):
+        try:
+            int(observation)
+        except ValueError:
+            return self.create_400_error()
+
         # we need just the first one
         obs = self.database.session.query(Observation).filter(
             Observation.id == observation
@@ -218,6 +223,11 @@ class ObservationItem(Resource):
 
 
     def delete(self, observation):
+        try:
+            int(observation)
+        except ValueError:
+            return self.create_404_error()
+
         obs = self.database.session.query(Observation).filter(
             Observation.id == observation
         ).first()
@@ -227,7 +237,7 @@ class ObservationItem(Resource):
         try:
             self.database.session.delete(obs)
             self.database.session.commit()
-        except IntegrityError:
+        except Exception:
             self.database.session.rollback()
             return self.create_500_error()
 

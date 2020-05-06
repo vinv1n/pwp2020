@@ -1,0 +1,34 @@
+{
+    "observation": {
+        "template": {
+        "data": [
+            {
+                "name": "temperature",
+                "value": "5"
+            },
+            {
+                "name": "wind",
+                "value": "1"
+            },
+            {
+                "name": "wind-direction",
+                "value": "NW"
+            },
+            {
+                "name": "humidity",
+                "value": "45"
+            },
+            {
+                "name": "location",
+                "value": "65.011028,25.474705"
+            }
+        ]
+        }
+    },
+    "device": {
+
+    },
+    "user": {
+        
+    }
+}

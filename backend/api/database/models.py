@@ -25,7 +25,7 @@ class User(Base):
     name = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     email = Column(String, nullable=False)
-    
+
     user_observations = relationship("Observation", back_populates="user")
 
     # relationships
@@ -115,7 +115,6 @@ class DeviceGroup(Base):
 class WeatherTalkDatabase:
 
     def __init__(self, config):
-
         self.engine = create_engine(config.SQLALCHEMY_DATABASE_URI)
         self.session = scoped_session(sessionmaker(self.engine))
         Base.metadata.create_all(self.engine, checkfirst=True)
