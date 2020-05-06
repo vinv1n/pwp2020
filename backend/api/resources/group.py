@@ -67,7 +67,8 @@ class UsersGroupCollection(Resource):
             if "-" in name:
                 name = name.replace("-", "_")
             setattr(device_group, name, value)
-            
+        
+        #TODO should check if the user exists and rturn 404 if not
         setattr(device_group, "user_id", user)
         self.database.session.add(device_group)
         try:
@@ -86,10 +87,6 @@ class UsersGroupCollection(Resource):
         devicegroup_list = self.database.session.query(DeviceGroup).filter(
             DeviceGroup.user_id == user
         ).all()
-        # devicegroup_list = self.database.session.query(DeviceGroup).filter(
-        # )
-        # logger.error(f"{devicegroup_list} ----- {user}")
-        # logger.error(f"{devicegroup_list[0].user_id}")
         collection = DeviceGroupCollectionBuilder(devicegroup_list, user)
 
         return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
@@ -102,7 +99,13 @@ class UsersGroupItem(Resource):
         self.database = db
         
     def get(self, user, group):
-        pass
+        # TODO fix the query here. Doesn't seem to work.
+        devicegroup_list = self.database.session.query(DeviceGroup).filter(
+            DeviceGroup.user_id == user,
+            DeviceGroup.id == group
+        ).all()
+        collection = DeviceGroupCollectionBuilder(devicegroup_list, user)
+        return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
 
     def put(self, user, group):
         pass
