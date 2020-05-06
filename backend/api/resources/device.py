@@ -30,16 +30,16 @@ class DeviceCollection(Resource):
             message = "The device template had incorrect contents"
         return create_error_response(400, "Bad Request", message)
 
-    def get(self):
+    def get(self, user):
         """ Get all devices """
         logger.info("GET all devices")
         devicelist = self.database.session.query(Device).all()
-        collection = DeviceCollectionBuilder(devicelist)
+        collection = DeviceCollectionBuilder(devicelist, user)
 
         return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
 
 
-    def post(self):
+    def post(self, user):
         """ Create a new device """ 
         logger.info("POST new device")
 
@@ -69,6 +69,7 @@ class DeviceCollection(Resource):
             return self.create_400_error()
         headers = {
             "Location": api.url_for(DeviceItem,
+                                    user=user,
                                     device=device.id),
         }
         return Response(status=201, headers=headers)
@@ -90,22 +91,24 @@ class DeviceItem(Resource):
         message = "The requested device could not be found"
         return create_error_response(404, "Not found", message)
 
-    def get(self, device):
+    def get(self, user, device):
         """ Get details of a single device """
         dev = self.database.session.query(Device).filter(
                     Device.id == device
-                )
+                ).first()
         if not dev:
             return self.create_404_error()
 
-        body = DeviceCollectionBuilder(dev)
+        body = DeviceCollectionBuilder(dev, user)
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
-    def put(self, device):
+    def put(self, user, device):
         """ Update device details """
         dev = self.database.session.query(Device).filter_by(
                     id = device
             ).first()
+        if not dev:
+            return self.create_404_error()
 
         body = request.get_json(force=True)
 
@@ -131,7 +134,7 @@ class DeviceItem(Resource):
 
 
 
-    def delete(self, device):
+    def delete(self, user, device):
         dev = self.database.session.query(Device).filter(
             Device.id == device
         ).first()
@@ -164,18 +167,19 @@ device_template = [
 
 class DeviceCollectionBuilder(CollectionJsonBuilder):
 
-    def __init__(self, devices):
+    def __init__(self, devices, user):
         super().__init__()
-        self.add_href(api.url_for(DeviceCollection))
+        self.add_href(api.url_for(DeviceCollection, user=user))
         self.add_template(device_template)
         self.add_items()
-        self.add_devices(devices)
+        self.add_devices(devices, user)
 
-    def add_devices(self, devices):
+    def add_devices(self, devices, user):
         data = device_template
         for device in devices:
             item = DeviceItemBuilder(
-                device.id
+                device.id,
+                user
             )
             for i in data:
                 name = i["name"]
@@ -188,10 +192,10 @@ class DeviceCollectionBuilder(CollectionJsonBuilder):
 
 class DeviceItemBuilder(CollectionJsonItemBuilder):
 
-    def __init__(self, device):
+    def __init__(self, device, user):
         super().__init__()
-        self.add_href(api.url_for(DeviceItem, device=device))
+        self.add_href(api.url_for(DeviceItem, device=device, user=user))
         self.add_link(
-            "devices",
-            api.url_for(DeviceCollection)
+            "devices-of-user",
+            api.url_for(DeviceCollection, user=user)
         )
