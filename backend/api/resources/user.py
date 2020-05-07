@@ -160,15 +160,9 @@ def get_user_template(data: bool = False) -> Dict:
 
 class UserCollectionBuilder(CollectionJsonBuilder):
 
-    def __init__(self, users, **kwargs):
+    def __init__(self, users):
         super().__init__()
-        self.add_href(api.url_for(UserCollection, **kwargs))
-        if kwargs:
-            self.add_link(
-                "all-users",
-                api.url_for(UserCollection)
-            )
-
+        self.add_href(api.url_for(UserCollection))
         self.add_template(get_user_template())
         self.add_items()
         self.add_users(users)
