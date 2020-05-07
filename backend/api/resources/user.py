@@ -88,7 +88,7 @@ class UserItem(Resource):
     def get(self, user):
         user = self.db.session.query(User).filter(
             User.id == user
-        )
+        ).first()
         if not user:
             return create_error_response(404, "Not Found")
 
