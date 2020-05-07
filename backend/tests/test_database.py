@@ -5,8 +5,9 @@ import random
 
 from flask import Flask
 
-from api import db, app
-from api.database import User, DeviceGroup, Device, Observation, WeatherTypes
+from api import app
+from api.config import Config
+from api.database import User, DeviceGroup, Device, Observation, WeatherTypes, WeatherTalkDatabase
 
 
 # sources for this test
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 ENTRIES = {
     "user": {
         "name": "test",
+        "email": "test@test.com",
         "password": "mostsecurepasswdever",
     },
     "observation": {
@@ -45,16 +47,14 @@ ENTRIES = {
 
 class DatabaseTest(unittest.TestCase):
 
-    db = db
+    db = WeatherTalkDatabase(Config())
     app = app
 
     def setUp(self):
-        with self.app.app_context():
-            self.db.create_all()
+        self.db = WeatherTalkDatabase(Config())
 
     def tearDown(self):
         self.db.session.remove()
-        self.db.drop_all()
 
     @staticmethod
     def generate_observation():
@@ -74,14 +74,14 @@ class DatabaseTest(unittest.TestCase):
 
     @staticmethod
     def generate_user():
-        return User(name=str(uuid.uuid1().hex), password=str(uuid.uuid1().hex))
+        return User(name=str(uuid.uuid1().hex), email=str(uuid.uuid1().hex), password=str(uuid.uuid1().hex))
 
     def test_create_user(self):
         test_content = ENTRIES.get("user")
 
         user = None
         try:
-            user = User(name=test_content.get("name"), password=test_content.get("password"))
+            user = self.generate_user()
             self.db.session.add(user)
         except Exception as e:
             self.fail(f"Error {e}, {e.__class__}")
@@ -90,12 +90,9 @@ class DatabaseTest(unittest.TestCase):
         for _ in range(0, random.randrange(1, 10)):
             try:
                 device = self.generate_device()
-                observation = self.generate_observation()
                 user.devices.append(device)
-                user.observations.append(observation)
 
                 self.db.session.add(device)
-                self.db.session.add(observation)
             except Exception as e:
                 self.fail(f"Error {e}, {e.__class__}")
 
