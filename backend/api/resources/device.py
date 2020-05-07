@@ -179,6 +179,11 @@ device_template = [
             "name": "location",
             "value": "",
             "prompt": "Location of the device."
+        # },
+        #         {
+        #     "name": "device_groups",
+        #     "value": "",
+        #     "prompt": "Groups that the device belongs to."
         }
     ]
 
@@ -205,6 +210,13 @@ class DeviceCollectionBuilder(CollectionJsonBuilder):
                     name = name.replace("-", "_")
                 value = getattr(device, name)
                 item.add_data_entry(i["name"], value)
+
+                # if name == "device_groups":
+                #     groups = getattr(device, "device_groups")
+                #     owner_groups = []
+                #     for group in groups:
+                #         owner_groups.append(OwnerGroupBuilder(group, user))
+                #     item.add_data_entry(i["name"], owner_groups)
             self.add_item(item)
 
 
@@ -217,3 +229,9 @@ class DeviceItemBuilder(CollectionJsonItemBuilder):
             "devices-of-user",
             api.url_for(DeviceCollection, user=user)
         )
+
+class OwnerGroupBuilder(CollectionJsonItemBuilder):
+
+    def __init__(self, group, user):
+        super().__init__()
+        # self.add_href(api.url_for(UsersGroupItem, device=group.id, user=user))
