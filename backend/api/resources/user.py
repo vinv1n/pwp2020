@@ -125,7 +125,7 @@ class UserItem(Resource):
             self.db.session.commit()
         except Exception as e:
             logger.critical("Could not save modifications %s (%s)", e, e.__class__)
-            self.session.rollback()
+            self.db.session.rollback()
 
         return Response(status=204)
 
