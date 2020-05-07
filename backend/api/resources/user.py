@@ -170,7 +170,7 @@ class UserCollectionBuilder(CollectionJsonBuilder):
     def add_users(self, users):
         data = get_user_template(data=True)
         for user in users:
-            item = UserItemBuilder(user.id, user.email)
+            item = UserItemBuilder(user.id)
             for i in data:
                 name = i["name"]
                 if "-" in name:
@@ -184,7 +184,7 @@ class UserCollectionBuilder(CollectionJsonBuilder):
 
 class UserItemBuilder(CollectionJsonItemBuilder):
 
-    def __init__(self, user, test):
+    def __init__(self, user):
         super().__init__()
         self.add_href(api.url_for(UserItem, user=user))
         self.add_link("owned-device-groups", api.url_for(UsersGroupCollection, user=user))
