@@ -26,9 +26,55 @@
         }
     },
     "device": {
-
+        "template": {
+            "data": [
+              {
+                "name": "identifier",
+                "value": "cottage00"
+              },
+              {
+                "name": "location",
+                "value": "65.011028,25.474705"
+              }
+            ]
+        }
     },
     "user": {
-        
+        "template": {
+            "data": [
+              {
+                "name": "name",
+                "value": "John Doe"
+              },
+              {
+                "name": "email",
+                "value": "john@doe.com"
+              },
+              {
+                "name": "password",
+                "value": "secret"
+              }
+            ]
+        }
+    },
+    "groups": {
+        "template": {
+            "links": [
+              {
+                "rel": "device-in-group",
+                "href": "/api/devices/4"
+              },
+              {
+                "rel": "device-in-group",
+                "href": "/api/devices/5"
+              }
+            ],
+            "data": [
+              {
+                "name": "group-name",
+                "value": "A group of devices somewhere"
+              }
+            ]
+          }
     }
 }

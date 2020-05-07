@@ -9,7 +9,10 @@ done
 
 if [ "$2" == "testing" ]; then
     gunicorn --workers 5 wsgi:app --bind 0.0.0.0:5000 --daemon
-    python3 -m unittest api/tests/test_endpoints.py
+    echo "Running tests"
+
+    coverage run -m unittest discover
+    coverage report -m
 else
     gunicorn --workers 5 wsgi:app --bind 0.0.0.0:5000
 fi

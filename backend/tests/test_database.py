@@ -6,8 +6,7 @@ import random
 from flask import Flask
 
 from api import db, app
-from api.database import User, UserAlert, Location, DeviceGroup, Device, Rating, \
-    Observation, WeatherTypes
+from api.database import User, DeviceGroup, Device, Observation, WeatherTypes
 
 
 # sources for this test
@@ -29,6 +28,7 @@ ENTRIES = {
         "pressure": 1000.5,
         "wind": 69,
         "condition": 1,
+        "location": "test,test"
     },
     "rating": {
         "content": "test test test",
@@ -40,18 +40,6 @@ ENTRIES = {
     "group": {
         "name": "test group"
     },
-    "location": {
-        "name": "Oulu",
-        "longitude": "69696",
-        "latitide": "test latitude"
-    },
-    "alert": {
-        "humidity": 10.5,
-        "temperature": 27,
-        "pressure": 1000.5,
-        "wind": 69,
-        "condition": 1,
-    }
 }
 
 
@@ -75,21 +63,14 @@ class DatabaseTest(unittest.TestCase):
             temperature=float(random.randrange(0, 100)),
             pressure=float(random.randrange(0, 100)),
             wind=float(random.randrange(0, 100)),
-            condition=WeatherTypes.Sunny
+            condition=WeatherTypes.Sunny,
+            location="test, test"
         )
         return observation
 
     @staticmethod
     def generate_device():
         return Device(name=str(uuid.uuid1().hex))
-
-    @staticmethod
-    def generate_location():
-        return Location(
-            longitude=str(uuid.uuid1().hex),
-            latitude=str(uuid.uuid1().hex),
-            name=str(uuid.uuid1().hex)
-        )
 
     @staticmethod
     def generate_user():
@@ -178,39 +159,6 @@ class DatabaseTest(unittest.TestCase):
         except Exception as e:
             self.fail(f"Error {e}, {e.__class__}")
 
-    def test_create_location(self):
-        try:
-            location = self.generate_location()
-            for _ in range(0, random.randrange(1, 10)):
-                observation = self.generate_observation()
-
-                location.observations.append(observation)
-                self.db.session.add(observation)
-
-            self.db.session.commit()
-        except Exception as e:
-            self.fail(f"Error {e}, {e.__class__}")
-
-    def test_delete_location(self):
-        locations = self.db.session.query(Location).all()
-        if not locations:
-            for _ in range(0, random.randrange(1, 10)):
-                location = self.generate_location()
-                observation = self.generate_observation()
-
-                location.observations.append(observation)
-                self.db.session.add(observation)
-                self.db.session.add(location)
-            self.db.session.commit()
-            locations = self.db.session.query(Location).all()
-
-        try:
-            for location in locations:
-                self.db.session.delete(location)
-
-            self.db.session.commit()
-        except Exception as e:
-            self.fail(f"Error {e}, {e.__class__}")
 
     def test_delete_device_group(self):
         groups = self.db.session.query(DeviceGroup).all()
@@ -232,86 +180,6 @@ class DatabaseTest(unittest.TestCase):
         for group in groups:
             try:
                 self.db.session.delete(group)
-                self.db.session.commit()
-            except Exception as e:
-                self.fail(f"Error {e}, {e.__class__}")
-
-    def test_create_user_alert(self):
-        try:
-            user = self.generate_user()
-            alert = UserAlert(
-                humidity=10.5,
-                temperature=27,
-                pressure=1000.5,
-                wind=69,
-                condition=WeatherTypes.Windy,
-                user_id=user.id
-            )
-            self.db.session.add(user)
-            self.db.session.add(alert)
-            self.db.session.commit()
-        except Exception as e:
-            self.fail(f"Error {e}, {e.__class__}")
-
-    def test_delete_alert(self):
-        alerts = self.db.session.query(UserAlert).all()
-        if not alerts:
-            user = self.generate_user()
-            alert = UserAlert(
-                humidity=10.5,
-                temperature=27,
-                pressure=1000.5,
-                wind=69,
-                condition=WeatherTypes.Windy,
-                user_id=user.id
-            )
-            self.db.session.add(user)
-            self.db.session.add(alert)
-            self.db.session.commit()
-
-            alerts = self.db.session.query(UserAlert).all()
-
-        try:
-            for alert in alerts:
-                self.db.session.delete(alert)
-
-            self.db.session.commit()
-        except Exception as e:
-            self.fail(f"Error {e}, {e.__class__}")
-
-    def test_create_obsevation_rating(self):
-        observation = self.generate_observation()
-        rating = Rating(
-            observation_id=observation.id,
-            value=ENTRIES["rating"]["value"],
-            content=ENTRIES["rating"]["content"]
-        )
-        if not all((observation, rating)):
-            self.fail("Was not able to create observation rating")
-
-        try:
-            self.db.session.add(observation)
-            self.db.session.add(rating)
-        except Exception as e:
-            self.fail(f"Error {e}, {e.__class__}")
-
-    def test_delete_rating(self):
-        ratings = self.db.session.query(Rating).all()
-        if not ratings:
-            for _ in range(0, random.randrange(1, 10)):
-                observation = self.generate_observation()
-                rating = rating = Rating(
-                    observation_id=observation.id,
-                    value=random.randrange(1, 10),
-                    content=str(uuid.uuid1().hex)
-                )
-                self.db.session.add(observation)
-                self.db.session.add(rating)
-                self.db.session.commit()
-
-        for rating in ratings:
-            try:
-                self.db.session.delete(rating)
                 self.db.session.commit()
             except Exception as e:
                 self.fail(f"Error {e}, {e.__class__}")

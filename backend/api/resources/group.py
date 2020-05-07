@@ -49,6 +49,11 @@ class UsersGroupCollection(Resource):
         self.database = db
 
     def post(self, user):
+        try:
+            int(user)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         device_group = DeviceGroup()
         body = request.get_json(force=True)
         try:
@@ -68,7 +73,7 @@ class UsersGroupCollection(Resource):
             setattr(device_group, name, value)
         
         # Check if the user exists
-        check_user = self.db.session.query(User).filter(
+        check_user = self.database.session.query(User).filter(
             User.id == user
         ).first()
         if not user:
@@ -89,6 +94,11 @@ class UsersGroupCollection(Resource):
         return Response(status=201, headers=headers)
 
     def get(self, user):
+        try:
+            int(user)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         devicegroup_list = self.database.session.query(DeviceGroup).filter(
             DeviceGroup.user_id == user
         ).all()
@@ -104,6 +114,12 @@ class UsersGroupItem(Resource):
         self.database = db
         
     def get(self, user, group):
+        try:
+            int(user)
+            int(group)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         devicegroup_list = self.database.session.query(DeviceGroup).filter(
             DeviceGroup.user_id == user,
             DeviceGroup.id == group
@@ -114,27 +130,32 @@ class UsersGroupItem(Resource):
         return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
 
     def put(self, user, group):
-        device_group = self.database.session.query(DeviceGroup).filter_by(
+        try:
+            int(user)
+            int(group)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
+        device_group = self.database.session.query(DeviceGroup).filter(
             DeviceGroup.user_id == user,
             DeviceGroup.id == group
         ).first()
         if not device_group:
-            return self.create_404_error()
+            return create_error_response(404, "Not Found", "")
 
         body = request.get_json(force=True)
 
         try:
             data = body["template"]["data"]
         except KeyError:
-            return self.create_400_error()
+            return create_error_response(400, "Bad Request", "")
 
         for item in data:
             name = item.get("name")
             value = item.get("value")
             if not all((name, value)):
-                return self.create_400_error(
-                    "{} is a required field".format(name)
-                )
+                return create_error_response(400, "Not Found", f"requred field {name}")
+
             if "-" in name:
                 name = name.replace("-", "_")
             setattr(device_group, name, value)
@@ -142,15 +163,21 @@ class UsersGroupItem(Resource):
         self.database.session.add(device_group)
         self.database.session.commit()
         return Response(status=204)
-        
 
     def delete(self, user, group):
-        device_group = self.database.session.query(DeviceGroup).filter_by(
+        try:
+            int(user)
+            int(group)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
+        device_group = self.database.session.query(DeviceGroup).filter(
             DeviceGroup.user_id == user,
             DeviceGroup.id == group
         ).first()
         if not device_group:
-            return self.create_404_error()
+            return create_error_response(404, "Not Found", "")
+
         try:
             self.database.session.delete(device_group)
             self.database.session.commit()
@@ -159,7 +186,7 @@ class UsersGroupItem(Resource):
             return self.create_500_error()
 
         return Response(status=204)
-        
+
 
 users_group_template = [
         {

@@ -67,7 +67,6 @@ class UserCollection(Resource):
                 ).scalar()
                 if userexists_check:
                     return create_error_response(409, f"User with name {value} already exists", "")
-            
 
             setattr(user, name, value)
         self.db.session.add(user)
@@ -86,6 +85,11 @@ class UserItem(Resource):
         self.db = db
 
     def get(self, user):
+        try:
+            int(user)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         user = self.db.session.query(User).filter(
             User.id == user
         ).first()
@@ -96,6 +100,11 @@ class UserItem(Resource):
         return Response(json.dumps(response), status=200, content_type=COLLECTIONJSON)
 
     def put(self, user):
+        try:
+            int(user)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         user = self.db.session.query(User).filter(
             User.id == user
         ).first()
@@ -130,6 +139,11 @@ class UserItem(Resource):
         return Response(status=204)
 
     def delete(self, user):
+        try:
+            int(user)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         user = self.db.session.query(User).filter(
             User.id == user
         ).first()
