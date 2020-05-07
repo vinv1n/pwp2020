@@ -5,7 +5,8 @@ from flask_restful import Resource
 from flask import json, request, Response, jsonify, abort, url_for
 from sqlalchemy.exc import IntegrityError
 
-from api.database import DeviceGroup, User
+from api.database import DeviceGroup, User, Device
+from .device import DeviceItem
 
 from .. import COLLECTIONJSON, api
 
@@ -59,18 +60,29 @@ class UsersGroupCollection(Resource):
         try:
             data = body["template"]["data"]
         except KeyError:
-            return self.create_400_error()
+            return create_error_response(400)
 
         for item in data:
             name = item.get("name")
             value = item.get("value")
+            logger.error(f"{name} ---- {value}")
             if not all((name, value)):
-                return self.create_400_error(
-                    "{} is a required field".format(name)
+                return create_error_response(
+                    404, "{} is a required field".format(name)
                 )
             if "-" in name:
                 name = name.replace("-", "_")
-            setattr(device_group, name, value)
+            if name == "members":
+                devices_to_add = []
+                for device in value:
+                    dev = self.database.session.query(Device).filter(
+                        Device.id == device
+                    ).first()
+                    devices_to_add.append(dev)
+                logger.error(f"devices_to_add: {devices_to_add}")
+                setattr(device_group, name, devices_to_add)
+            else:
+                setattr(device_group, name, value)
         
         # Check if the user exists
         check_user = self.database.session.query(User).filter(
@@ -193,6 +205,11 @@ users_group_template = [
             "name": "name",
             "value": "",
             "prompt": "Identifying name for the device group.",
+        },
+        {
+            "name": "members",
+            "value": "",
+            "prompt": "List of devices in the group.",
         }
     ]
 
@@ -219,11 +236,19 @@ class DeviceGroupCollectionBuilder(CollectionJsonBuilder):
                 devicegroup
             )
             for i in data:
+                logger.error(f"GROUP DATA: {i}")
                 name = i["name"]
                 if "-" in name:
                     name = name.replace("-", "_")
-                value = getattr(devicegroup, name)
-                item.add_data_entry(i["name"], value)
+                if name != "members":
+                    value = getattr(devicegroup, name)
+                    item.add_data_entry(i["name"], value)
+                else:
+                    value = getattr(devicegroup, name)
+                    member_devices = []
+                    for device in value:
+                        member_devices.append(MemberitemBuilder(device, user))
+                    item.add_data_entry(i["name"], member_devices)
             self.add_item(item)
 
 
@@ -232,4 +257,11 @@ class DeviceGroupItemBuilder(CollectionJsonItemBuilder):
     def __init__(self, user, group):
         super().__init__()
         self.add_href(api.url_for(UsersGroupItem, user=user, group=group.id))
+
+
+class MemberitemBuilder(CollectionJsonItemBuilder):
+
+    def __init__(self, device, user):
+        super().__init__()
+        self.add_href(api.url_for(DeviceItem, device=device.id, user=user))
 
