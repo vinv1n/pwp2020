@@ -168,7 +168,7 @@ class ObservationItem(Resource):
         # we need just the first one
         obs = self.database.session.query(Observation).filter(
             Observation.id == observation
-        )
+        ).first()
         if not obs:
             return self.create_404_error()
 
@@ -179,6 +179,8 @@ class ObservationItem(Resource):
         obs = self.database.session.query(Observation).filter(
             Observation.id == observation
         ).first()
+        if not obs:
+            return self.create_404_error()
 
         body = request.get_json(force=True)
         try:
