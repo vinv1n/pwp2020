@@ -96,7 +96,7 @@ class UserItem(Resource):
         if not user:
             return create_error_response(404, "Not Found")
 
-        response = UserCollectionBuilder(user)
+        response = UserCollectionBuilder([user])
         return Response(json.dumps(response), status=200, content_type=COLLECTIONJSON)
 
     def put(self, user):
