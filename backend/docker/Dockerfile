@@ -9,6 +9,8 @@ ADD backend/__init__.py /app/
 ADD backend/wsgi.py /app/
 ADD backend/scripts/weathertalk /usr/bin/weathertalk
 
+ADD backend/tests/ /app/
+
 RUN pip3 install gunicorn
 
 ADD backend/requirements.txt /tmp/
