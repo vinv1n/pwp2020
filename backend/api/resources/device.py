@@ -40,7 +40,7 @@ class DeviceCollection(Resource):
 
 
     def post(self, user):
-        """ Create a new device """ 
+        """ Create a new device """
         logger.info("POST new device")
 
         device = Device()
@@ -93,17 +93,29 @@ class DeviceItem(Resource):
 
     def get(self, user, device):
         """ Get details of a single device """
+        try:
+            int(device)
+            int(user)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         dev = self.database.session.query(Device).filter(
                     Device.id == device
                 ).first()
         if not dev:
             return self.create_404_error()
 
-        body = DeviceCollectionBuilder(dev, user)
+        body = DeviceCollectionBuilder([dev], user)
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
     def put(self, user, device):
         """ Update device details """
+        try:
+            int(device)
+            int(user)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         dev = self.database.session.query(Device).filter_by(
                     id = device
             ).first()
@@ -135,6 +147,12 @@ class DeviceItem(Resource):
 
 
     def delete(self, user, device):
+        try:
+            int(user)
+            int(device)
+        except ValueError:
+            return create_error_response(400, "Bad Request", "")
+
         dev = self.database.session.query(Device).filter(
             Device.id == device
         ).first()
