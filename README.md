@@ -1,11 +1,12 @@
 # pwp2020
 
 ## Running the API
-Use Docker to run the API
+Use Docker to run the API:
 `docker-compose up`
-API is then accessible at localhost:5000
 
 
+
+API is then accessible at localhost:5000/api.
 Docker also set ups a Postgres database container, and connects the API to the database automaticly.
 
 ## TESTS
