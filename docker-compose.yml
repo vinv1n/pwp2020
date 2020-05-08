@@ -17,18 +17,6 @@ services:
             - internal
         command: ["postgres"]
 
-    nginx:
-        image: nginx:1.17.6
-        ports:
-            - "80:80"
-        links:
-            - backend
-            - postgres
-        volumes:
-            - ./config/nginx.conf:/etc/nginx/conf.d/nginx.conf
-        networks:
-            - internal
-
     postgres:
         image: postgres:12.2-alpine
         environment:
