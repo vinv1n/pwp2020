@@ -172,7 +172,7 @@ class ObservationItem(Resource):
         if not obs:
             return self.create_404_error()
 
-        body = ObservationCollectionBuilder(obs)
+        body = ObservationCollectionBuilder([obs])
         return Response(json.dumps(body), status=200, mimetype=COLLECTIONJSON)
 
     def put(self, observation):
