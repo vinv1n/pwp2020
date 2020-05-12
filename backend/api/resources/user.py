@@ -66,7 +66,7 @@ class UserCollection(Resource):
                     self.db.session.query(User).filter_by(name = value).exists()
                 ).scalar()
                 if userexists_check:
-                    return create_error_response(409, f"User with name {value} already exists", "")
+                    return create_error_response(409, "Bad Request", f"User with name {value} already exists")
 
             setattr(user, name, value)
         self.db.session.add(user)
