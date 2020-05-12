@@ -30,45 +30,6 @@ class ObservationCollection(Resource):
         return create_error_response(400, "Bad Request", message)
 
     def post(self):
-#        base_observation = Observation()
-#        for item, value in request.args.items():
-#            try:
-#                if isinstance(item, list):
-#                    item = ",".join(item)
-#
-#                setattr(base_observation, item, value)
-#            except Exception as e:
-#                logger.critical("Error during request parsing, error %s (%s)", e, e.__class__)
-#                return create_error_response(
-#                    400,
-#                    "Bad request",
-#                    "The observation template had incorrect contents.",
-#                )
-#
-#        # force must be used as the content type is not plain json
-#        body = request.get_json(force=True)
-#
-#        template = body.get("template", {})
-#        if not template:
-#            return Response(self.hypermedia.construct_400_error(), status=400)
-#
-#        data = template.get("data", [])
-#        if not data:
-#            return Response(self.hypermedia.construct_400_error(), status=400)
-#
-#        for entry in data:
-#            name = entry.get("name", "")
-#            value = entry("value")
-#            if not all((name, value)):
-#                return Response(self.hypermedia.construct_400_error(), status=400)
-#
-#            setattr(base_observation, name, value)
-#
-#        self.database.session.add(base_observation)
-#        self.database.session.commit()
-#        return Response(f"Location:/api/observations/{base_observation.id}", status=201)
-
-
         observation = Observation()
         body = request.get_json(force=True)
         try:
@@ -272,6 +233,11 @@ def get_observation_template(data=False):
             "name": "location",
             "value": "",
             "prompt": "Location of the observation",
+        },
+        {
+            "name": "user_id",
+            "value": "",
+            "prompt": "UserID of the observer",
         }
     ]
     if data:
@@ -303,9 +269,12 @@ class ObservationCollectionBuilder(CollectionJsonBuilder):
                 name = i["name"]
                 if "-" in name:
                     name = name.replace("-", "_")
-
-                value = getattr(observation, name)
-                item.add_data_entry(i["name"], value)
+                if name == "user":
+                    value = getattr(observation, name)
+                    item.add_data_entry(i["name"], value.id)
+                else:
+                    value = getattr(observation, name)
+                    item.add_data_entry(i["name"], value)
 
             self.add_item(item)
 

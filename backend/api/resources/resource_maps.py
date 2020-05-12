@@ -27,6 +27,9 @@ observation = {
     "location": {
         "prompt": "Location of the observation"
     },
+    "user_id": {
+        "prompt": "User ID of the observer"
+    },
 }
 
 observation_search_links = {
