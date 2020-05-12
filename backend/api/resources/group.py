@@ -136,8 +136,8 @@ class UsersGroupItem(Resource):
             DeviceGroup.user_id == user,
             DeviceGroup.id == group
         ).all()
-        if not device_group:
-            return self.create_404_error()
+        if not devicegroup_list:
+            return create_error_response(404, "Not found", "")
         collection = DeviceGroupCollectionBuilder(devicegroup_list, user)
         return Response(json.dumps(collection), status=200, mimetype=COLLECTIONJSON)
 
