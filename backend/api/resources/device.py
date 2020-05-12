@@ -41,15 +41,19 @@ class DeviceCollection(Resource):
 
     def post(self, user):
         """ Create a new device """
-        logger.info("POST new device")
+        entry = request.get_json(force=True)
+        if not entry:
+            return create_error_response(400, "Bad Request", "")
+
+        template = entry.get("template", {})
+        if not template:
+            return create_error_response(400, "Bad Request", "")
+
+        data = template.get("data", [])
+        if not data:
+            return create_error_response(400, "Bad Request", "")
 
         device = Device()
-        body = request.get_json(force=True)
-        try:
-            data = body["template"]["data"]
-        except KeyError:
-            return self.create_400_error()
-
         for item in data:
             name = item.get("name")
             value = item.get("value")
