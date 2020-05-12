@@ -365,7 +365,7 @@ class GroupTests(unittest.TestCase):
         resp = self.session.get(url, headers=self._get_header)
         self.assertEqual(resp.status_code, 400)
         resp = self.session.get(f"{self.url}/1111", headers=self._get_header)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 404)
 
     def test_valid_put(self):
         url = f"{self.url}/{self._id}"
