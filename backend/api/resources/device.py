@@ -221,6 +221,7 @@ class DeviceCollectionBuilder(CollectionJsonBuilder):
                 #     for group in groups:
                 #         owner_groups.append(OwnerGroupBuilder(group, user))
                 #     item.add_data_entry(i["name"], owner_groups)
+            item.add_data_entry("id", device.id)
             self.add_item(item)
 
 

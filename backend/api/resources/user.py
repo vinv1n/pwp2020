@@ -196,6 +196,7 @@ class UserCollectionBuilder(CollectionJsonBuilder):
 
                 value = getattr(user, name)
                 item.add_data_entry(i["name"], value)
+            item.add_data_entry("id", user.id)
 
             self.add_item(item)
 
