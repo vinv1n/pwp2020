@@ -15,6 +15,17 @@ function appendObservationRow(body) {
     $(".resulttable tbody").append(observationRow(body.collection.items[0]));
 }
 
+function deleteObservation(event, a) {
+    event.preventDefault();
+    $("div.form").empty();
+    sendData(
+        API_URL + $(a).attr("href"),
+        "DELETE",
+        null,
+        enterApi
+    );
+}
+
 function enterApi() {
     getResource(API_URL + "/api/", enterObservations);
 }
@@ -110,6 +121,12 @@ function renderObservation(body) {
             + ">" + rel_mapping[it.rel] + "</a>"
         );
     });
+    nav.append(
+        " <a href='"
+        + item.href
+        + "' onClick='deleteObservation(event, this)'"
+        + ">DELETE observation</a>"
+    );
     renderObservationForm(item.data, item.href, "PUT");
 }
 
