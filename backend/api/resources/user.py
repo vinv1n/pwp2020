@@ -157,17 +157,20 @@ class UserItem(Resource):
 
 def get_user_template(data: bool = False) -> Dict:
     return [
-              {
+      {
         "name": "name",
-        "value": "John Doe"
+        "value": "",
+        "prompt": "Your name",
       },
       {
         "name": "email",
-        "value": "john@doe.com"
+        "value": "",
+        "prompt": "Your email address",
       },
       {
         "name": "password",
-        "value": "secret"
+        "value": "",
+        "prompt": "Password",
       }
     ]
 
