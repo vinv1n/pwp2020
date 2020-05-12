@@ -17,18 +17,6 @@ services:
             - internal
         command: ["postgres-test", "testing"]
 
-    nginx:
-        image: nginx:1.17.6
-        ports:
-            - "80:80"
-        links:
-            - backend-test
-            - postgres-test
-        volumes:
-            - ./config/nginx-test.conf:/etc/nginx/conf.d/nginx.conf
-        networks:
-            - internal
-
     postgres-test:
         image: postgres:12.2-alpine
         environment:
