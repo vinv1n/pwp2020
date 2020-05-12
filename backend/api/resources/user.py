@@ -69,12 +69,13 @@ class UserCollection(Resource):
                     return create_error_response(409, "Bad Request", f"User with name {value} already exists")
 
             setattr(user, name, value)
-        self.db.session.add(user)
         try:
+            self.db.session.add(user)
             self.db.session.commit()
         except Exception as e:
             logger.warning("Error while creating user. Error %s (%s)", e, e.__class__)
             self.db.session.rollback()
+            return create_error_response(400, "Bad Request", "")
         headers = {"Location": api.url_for(UserItem, user=user.id)}
         return Response(headers=headers, status=201)
 
