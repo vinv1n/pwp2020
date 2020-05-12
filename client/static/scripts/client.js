@@ -15,6 +15,10 @@ function appendObservationRow(body) {
     $(".resulttable tbody").append(observationRow(body.collection.items[0]));
 }
 
+function appendUserRow(body) {
+    $(".resulttable tbody").append(userRow(body.collection.items[0]));
+}
+
 function deleteObservation(event, a) {
     event.preventDefault();
     $("div.form").empty();
@@ -26,8 +30,32 @@ function deleteObservation(event, a) {
     );
 }
 
-function enterApi() {
-    getResource(API_URL + "/api/", enterObservations);
+function enterApi(resource) {
+    if (resource === "choose") {
+        getResource(API_URL + "/api/", enterChoose);
+    } else {
+        getResource(API_URL + "/api/", enterObservations);
+    }
+}
+
+function enterChoose(body) {
+    let nav = $("div.navigation");
+    nav.empty();
+    let mapping = {
+        "observations": ["Observations", "renderObservations"],
+        "users": ["Users", "renderUsers"],
+    };
+    body.collection.links.forEach(function (item) {
+        nav.append(
+            "<a href='"
+            + item.href
+            + "' onClick='followLink(event, this, "
+            + mapping[item.rel][1]
+            + ")'>"
+            + mapping[item.rel][0]
+            + "</a> "
+        );
+    });
 }
 
 function enterObservations(body) {
@@ -67,6 +95,13 @@ function getSubmittedObservation(data, status, jqxhr) {
     let href = jqxhr.getResponseHeader("Location");
     if (href) {
         getResource(href, appendObservationRow);
+    }
+}
+
+function getSubmittedUser(data, status, jqxhr) {
+    let href = jqxhr.getResponseHeader("Location");
+    if (href) {
+        getResource(href, appendUserRow);
     }
 }
 
@@ -198,6 +233,58 @@ function renderObservations(body) {
     );
 }
 
+function renderUserForm(data, href, method) {
+    let form = $("<form>");
+    form.attr("action", href);
+    form.attr("method", method);
+    form.submit(submitUser);
+    let new_data = {};
+    data.forEach(function (item) {
+        new_data[item.name.replace("-", "_")] = item;
+    });
+    let order = [
+        "name",
+        "email",
+        "password",
+    ];
+    order.forEach(function (item) {
+        if (item in new_data) {
+            form.append("<label>" + new_data[item].prompt + "</label>");
+            form.append(
+                "<input type='text' "
+                + "name='" + new_data[item].name + "' "
+                + "value='" + new_data[item].value + "'>"
+            );
+        }
+    });
+    form.append("<input type='submit' name='submit' value='Submit'>");
+    $("div.form").html(form);
+}
+
+function renderUsers(body) {
+    let nav = $("div.navigation");
+    nav.empty();
+    nav.append(
+        "<a href='"
+        + body.collection.href
+        + "' onClick='followLink(event, this, renderUsers)'"
+        + ">All users</a>"
+    );
+    $(".resulttable thead").html(
+        "<tr><th>Name</th></tr>"
+    );
+    let tbody = $(".resulttable tbody");
+    tbody.empty();
+    body.collection.items.forEach(function (item) {
+        tbody.append(userRow(item));
+    });
+    renderUserForm(
+        body.collection.template.data,
+        body.collection.href,
+        "POST"
+    );
+}
+
 // Directly borrowed from the PWP exercise 4.
 function sendData(href, method, item, postProcessor) {
     $.ajax({
@@ -236,6 +323,41 @@ function submitObservation(event) {
     );
 }
 
+function submitUser(event) {
+    event.preventDefault();
+
+    let data = {
+        template: {
+            data: []
+        }
+    };
+    let form = $("div.form form");
+    let dataInputs = $.makeArray($("div.form form input[type!='submit']"));
+    dataInputs.forEach(function (item) {
+        let it = {
+            name: item.name,
+            value: item.value,
+        };
+        data.template.data.push(it);
+    });
+    sendData(
+        API_URL + form.attr("action"),
+        form.attr("method"),
+        data,
+        getSubmittedUser
+    );
+}
+
+function userRow(item) {
+    let data = {};
+    item.data.forEach(function (entry) {
+        data[entry["name"]] = entry["value"];
+    });
+    return "<tr>"
+        + "<td>" + data["name"] + "</td>"
+        + "</tr>";
+}
+
 $(document).ready(function () {
-    enterApi();
+    enterApi("choose");
 });
