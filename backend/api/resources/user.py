@@ -76,7 +76,7 @@ class UserCollection(Resource):
             logger.warning("Error while creating user. Error %s (%s)", e, e.__class__)
             self.db.session.rollback()
         headers = {"Location": api.url_for(UserItem, user=user.id)}
-        return Response(headers=headers, status=201, content_type=COLLECTIONJSON)
+        return Response(headers=headers, status=201)
 
 
 class UserItem(Resource):
