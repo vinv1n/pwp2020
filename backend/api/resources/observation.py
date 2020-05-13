@@ -269,12 +269,10 @@ class ObservationCollectionBuilder(CollectionJsonBuilder):
                 name = i["name"]
                 if "-" in name:
                     name = name.replace("-", "_")
+                value = getattr(observation, name)
                 if name == "user":
-                    value = getattr(observation, name)
-                    item.add_data_entry(i["name"], value.id)
-                else:
-                    value = getattr(observation, name)
-                    item.add_data_entry(i["name"], value)
+                    value = value.id
+                item.add_data_entry(i["name"], value)
 
             self.add_item(item)
 
