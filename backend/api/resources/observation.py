@@ -272,7 +272,8 @@ class ObservationCollectionBuilder(CollectionJsonBuilder):
                 value = getattr(observation, name)
                 if name == "user":
                     value = value.id
-                item.add_data_entry(i["name"], value)
+                prompt = i["prompt"]
+                item.add_data_entry(i["name"], value, prompt)
 
             self.add_item(item)
 
