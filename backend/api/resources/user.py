@@ -161,12 +161,12 @@ def get_user_template(data: bool = False) -> Dict:
       {
         "name": "name",
         "value": "",
-        "prompt": "Your name",
+        "prompt": "Name",
       },
       {
         "name": "email",
         "value": "",
-        "prompt": "Your email address",
+        "prompt": "Email address",
       },
       {
         "name": "password",
