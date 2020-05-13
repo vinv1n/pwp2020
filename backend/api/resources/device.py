@@ -211,7 +211,8 @@ class DeviceCollectionBuilder(CollectionJsonBuilder):
             for i in data:
                 name = i["name"].replace("-", "_")
                 value = getattr(device, name)
-                item.add_data_entry(i["name"], value)
+                prompt = i["prompt"]
+                item.add_data_entry(i["name"], value, prompt)
 
                 # if name == "device_groups":
                 #     groups = getattr(device, "device_groups")

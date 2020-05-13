@@ -192,7 +192,8 @@ class UserCollectionBuilder(CollectionJsonBuilder):
             for i in data:
                 name = i["name"].replace("-", "_")
                 value = getattr(user, name)
-                item.add_data_entry(i["name"], value)
+                prompt = i["prompt"]
+                item.add_data_entry(i["name"], value, prompt)
             item.add_data_entry("id", user.id)
 
             self.add_item(item)

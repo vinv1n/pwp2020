@@ -240,7 +240,8 @@ class DeviceGroupCollectionBuilder(CollectionJsonBuilder):
                 name = i["name"].replace("-", "_")
                 if name != "members":
                     value = getattr(devicegroup, name)
-                    item.add_data_entry(i["name"], value)
+                    prompt = i["prompt"]
+                    item.add_data_entry(i["name"], value, prompt)
                 else:
                     value = getattr(devicegroup, name)
                     member_devices = []
