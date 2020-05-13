@@ -209,9 +209,7 @@ class DeviceCollectionBuilder(CollectionJsonBuilder):
                 user
             )
             for i in data:
-                name = i["name"]
-                if "-" in name:
-                    name = name.replace("-", "_")
+                name = i["name"].replace("-", "_")
                 value = getattr(device, name)
                 item.add_data_entry(i["name"], value)
 

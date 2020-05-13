@@ -266,9 +266,7 @@ class ObservationCollectionBuilder(CollectionJsonBuilder):
                 observation.location
             )
             for i in data:
-                name = i["name"]
-                if "-" in name:
-                    name = name.replace("-", "_")
+                name = i["name"].replace("-", "_")
                 value = getattr(observation, name)
                 if name == "user":
                     value = value.id

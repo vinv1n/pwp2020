@@ -237,9 +237,7 @@ class DeviceGroupCollectionBuilder(CollectionJsonBuilder):
             )
             for i in data:
                 logger.error(f"GROUP DATA: {i}")
-                name = i["name"]
-                if "-" in name:
-                    name = name.replace("-", "_")
+                name = i["name"].replace("-", "_")
                 if name != "members":
                     value = getattr(devicegroup, name)
                     item.add_data_entry(i["name"], value)

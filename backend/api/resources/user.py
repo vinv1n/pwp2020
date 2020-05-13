@@ -190,10 +190,7 @@ class UserCollectionBuilder(CollectionJsonBuilder):
         for user in users:
             item = UserItemBuilder(user.id)
             for i in data:
-                name = i["name"]
-                if "-" in name:
-                    name = name.replace("-", "_")
-
+                name = i["name"].replace("-", "_")
                 value = getattr(user, name)
                 item.add_data_entry(i["name"], value)
             item.add_data_entry("id", user.id)
